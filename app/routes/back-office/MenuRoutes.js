@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const menuController = require('../../../controllers/backOffice/Menu.controller');
-const { authenticateStaff, authorizeRoles } = require('../../../middlewares/Auth.middleware');
+const menuController = require('../../controllers/back-office/MenuController');
+const { authenticateStaff, authorizeRoles } = require('../../middlewares/auhtenticationMiddleware');
 
 // Routes defined here will be mounted under /api/staff/menu
 

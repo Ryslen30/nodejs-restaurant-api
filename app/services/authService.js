@@ -1,7 +1,7 @@
 
 const bcrypt = require('bcrypt'); 
 const jwt = require('jsonwebtoken'); 
-const UserRepository = require('../repositories/User.repository');
+const UserRepository = require('../repositories/userRepository');
 
 
 const JWT_SECRET = process.env.JWT_SECRET 
@@ -9,7 +9,7 @@ const SALT_ROUNDS = 10;
 
 class AuthService {
     constructor() {
-        this.userRepository = new UserRepository();
+        this.userRepository = UserRepository;
     }
 
     // --- Helper Methods (Business Logic) ---

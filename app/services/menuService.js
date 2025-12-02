@@ -1,7 +1,7 @@
 
 
-const CategoryRepository = require('../repositories/Category.repository');
-const ProductRepository = require('../repositories/Product.repository');
+const CategoryRepository = require('../repositories/categoryRepository');
+const ProductRepository = require('../repositories/productRepository');
 
 class MenuService {
     constructor() {

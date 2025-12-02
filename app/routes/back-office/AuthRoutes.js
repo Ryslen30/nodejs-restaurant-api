@@ -1,11 +1,15 @@
+const { authenticateStaff }= require ('../../middlewares/auhtenticationMiddleware');
+
 const express = require('express');
 const router = express.Router();
-const authController = require('../../../controllers/backOffice/Auth.controller');
+const authController = require('../../controllers/back-office/AuthController');
 
-// Routes defined here will be mounted under /api/staff
+// GET /login - Show login form
+router.get('/login', authController.showLoginForm);
 
-// POST /login - Staff logs in to get a JWT token (PUBLIC)
-// FULL PATH: /api/staff/login
+// POST /login - Process login
 router.post('/login', authController.staffLogin);
+
+router.get('/dashboard', authenticateStaff, authController.showDashboard);
 
 module.exports = router;

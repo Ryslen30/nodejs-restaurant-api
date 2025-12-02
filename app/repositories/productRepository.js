@@ -1,6 +1,6 @@
 // src/repositories/Product.repository.js
 
-const BaseRepository = require('./Base.repository');
+const BaseRepository = require('./baseRepository');
 const ProductModel = require('../models/product');
 
 class ProductRepository extends BaseRepository {

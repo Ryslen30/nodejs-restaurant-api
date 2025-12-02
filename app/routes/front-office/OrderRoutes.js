@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const orderController = require('../../../controllers/frontOffice/Order.controller');
-const { identifyTable } = require('../../../middlewares/IP.middleware');
+const orderController = require('../../controllers/front-office/OrderController');
+const { identifyTable } = require('../../middlewares/IPmappingMiddleware');
 
 // Routes defined here will be mounted under /api/client/orders
 

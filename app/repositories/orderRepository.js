@@ -1,6 +1,6 @@
 // src/repositories/Order.repository.js
 
-const BaseRepository = require('./Base.repository');
+const BaseRepository = require('./baseRepository');
 const OrderModel = require('../models/order');
 
 class OrderRepository extends BaseRepository {

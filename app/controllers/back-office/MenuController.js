@@ -1,4 +1,4 @@
-const MenuService = require('../../services/Menu.service');
+const MenuService = require('../../services/menuService');
 
 const menuService = new MenuService();
 

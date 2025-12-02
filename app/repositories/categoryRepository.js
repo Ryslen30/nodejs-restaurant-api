@@ -1,6 +1,6 @@
 // src/repositories/Category.repository.js
 
-const BaseRepository = require('./Base.repository');
+const BaseRepository = require('./baseRepository');
 const CategoryModel = require('../models/category'); // Assuming path to your Category model
 
 class CategoryRepository extends BaseRepository {

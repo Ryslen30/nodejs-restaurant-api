@@ -1,6 +1,6 @@
 
 
-const TableRepository = require('../repositories/Table.repository');
+const TableRepository = require('../repositories/tableRepository');
 const tableRepository = new TableRepository(); // Initialize the repository
 
 /**

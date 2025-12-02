@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
-const TableSchema = new new Schema({
+const TableSchema =  new Schema({
     tableNumber: {
         type: String,
         required: [true, 'Table number is required'],
@@ -11,7 +11,7 @@ const TableSchema = new new Schema({
     ipAddress: {
         // The IP address of the tablet assigned to this table
         type: String,
-        required: [true, 'IP address is required for tablet mapping'],
+        required: [false, 'IP address is required for tablet mapping'],
         unique: true,
         trim: true
     },

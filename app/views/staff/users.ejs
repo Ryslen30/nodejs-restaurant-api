@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Users Management - Staff Dashboard</title>
+    <style>
+        /* --- Base Styles --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+
+        /* --- Layout & Header --- */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+        }
+
+        .dashboard-wrapper {
+            display: flex;
+            min-height: calc(100vh - 84px);
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 250px;
+            background: #ffffff;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+            flex-shrink: 0;
+        }
+
+        .sidebar h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 18px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 10px;
+        }
+
+        .sidebar-nav a {
+            text-decoration: none;
+            color: #555;
+            display: block;
+            padding: 10px 15px;
+            border-radius: 5px;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .sidebar-nav a:hover,
+        .sidebar-nav a.active {
+            background: #e9ecef;
+            color: #667eea;
+        }
+
+        /* --- Main Content --- */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px 20px;
+            max-width: 950px;
+            margin: 0 auto;
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .dashboard-card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        /* --- Table and Actions --- */
+        .user-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+
+        .add-user-btn {
+            background: #28a745;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+
+        .add-user-btn:hover {
+            background: #218838;
+        }
+
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .users-table thead th {
+            background-color: #f8f9fa;
+            color: #333;
+            text-align: left;
+            padding: 12px 15px;
+            border-bottom: 2px solid #ddd;
+            font-weight: 600;
+        }
+
+        .users-table tbody td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            color: #555;
+            vertical-align: middle;
+        }
+
+        .users-table tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .action-btn {
+            padding: 6px 10px;
+            margin-right: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s;
+        }
+
+        .edit-btn {
+            background: #007bff;
+            color: white;
+        }
+
+        .edit-btn:hover {
+            background: #0056b3;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        .status-active {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .status-inactive {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        /* --- Modal Styles --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 30px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+            animation: animatetop 0.4s;
+        }
+
+        @keyframes animatetop {
+            from {
+                top: -300px;
+                opacity: 0
+            }
+
+            to {
+                top: 0;
+                opacity: 1
+            }
+        }
+
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .close-btn:hover,
+        .close-btn:focus {
+            color: #000;
+            text-decoration: none;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .form-actions {
+            text-align: right;
+            margin-top: 20px;
+        }
+
+        .form-actions button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .submit-btn {
+            background: #667eea;
+            color: white;
+            transition: background 0.3s;
+        }
+
+        .submit-btn:hover {
+            background: #5a6ed8;
+        }
+
+        /* --- Messages (Success/Error) --- */
+        .success-message {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #d4edda;
+            color: #155724;
+            background-color: #d4edda;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: opacity 0.5s ease-out;
+        }
+
+        .error-message {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            background-color: #f8d7da;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: opacity 0.5s ease-out;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>🏢 Staff Dashboard</h1>
+    </div>
+
+    <div class="dashboard-wrapper">
+        <div class="sidebar">
+            <h3>Navigation 🧭</h3>
+            <ul class="sidebar-nav">
+                <li><a href="/api/staff/dashboard" class="<%= currentPage === 'dashboard' ? 'active' : '' %>">🏠 Dashboard Home</a></li>
+                <li><a href="/api/staff/users" class="<%= currentPage === 'users' ? 'active' : '' %>">🧑‍💻 Users Management</a></li>
+                <li><a href="/tables" class="<%= currentPage === 'tables' ? 'active' : '' %>">📊 Tables View</a></li>
+                <li><a href="/reports" class="<%= currentPage === 'reports' ? 'active' : '' %>">📈 Reports</a></li>
+            </ul>
+        </div>
+
+        <div class="main-content">
+            <% if (message) { %>
+                <div class="success-message">
+                    ✓ <%= message %>
+                </div>
+            <% } %>
+
+            <div class="dashboard-card">
+                <h2>Users Management (<%= users.length %> Total)</h2>
+
+                <div class="user-actions">
+                    <button id="showAddUserModal" class="add-user-btn">
+                        + Add New User
+                    </button>
+                </div>
+
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Created On</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% users.forEach(user => { %>
+                            <tr>
+                                <td>
+                                    <%= user._id.toString().substring(0, 5) %>...
+                                </td>
+                                <td>
+                                    <%= user.username %>
+                                </td>
+                                <td>
+                                    <%= user.email %>
+                                </td>
+                                <td>
+                                    <%= user.role %>
+                                </td>
+                                <td>
+                                    <% 
+                                        const active = user.isActive; 
+                                        const statusText = active ? 'Active' : 'Inactive';
+                                        const statusClass = active ? 'active' : 'inactive'; 
+                                    %>
+                                    <span class="status-<%= statusClass %>">
+                                        <%= statusText %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <% if (user.createdAt) { %>
+                                        <%= new Date(user.createdAt).toLocaleDateString() %>
+                                    <% } else { %>
+                                        N/A
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <button class="action-btn edit-btn" data-user='<%= JSON.stringify(user) %>'
+                                        onclick="openEditModal(this)">
+                                        Edit
+                                    </button>
+
+                                    <button class="action-btn delete-btn"
+                                        onclick="if(confirm('Are you sure you want to delete <%= user.username %>? This cannot be undone.')) { document.getElementById('delete-<%= user._id %>').submit(); }">
+                                        Delete
+                                    </button>
+                                    <form id="delete-<%= user._id %>" method="post"
+                                        action="/api/staff/users/<%= user._id %>?_method=DELETE" style="display:none;">
+                                        <input type="hidden" name="_method" value="DELETE">
+                                    </form>
+                                </td>
+                            </tr>
+                        <% }); %>
+
+                        <% if (users.length === 0) { %>
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 20px;">No users found.</td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="addUserModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn add-close-btn">&times;</span>
+            <h2>Create New User</h2>
+            <form id="addUserForm">
+
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required minlength="6">
+                </div>
+
+                <div class="form-group">
+                    <label for="firstName">First Name</label>
+                    <input type="text" id="firstName" name="firstName">
+                </div>
+
+                <div class="form-group">
+                    <label for="lastName">Last Name</label>
+                    <input type="text" id="lastName" name="lastName">
+                </div>
+
+                <div class="form-group">
+                    <label for="role">Role</label>
+                    <select id="role" name="role" required>
+                        <option value="client">Client</option>
+                        <option value="waiter">Waiter</option>
+                        <option value="cook">Cook</option>
+                        <option value="manager">Manager</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="isActive">Status</label>
+                    <select id="isActive" name="isActive" required>
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
+                    </select>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="submit-btn">Create User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="editUserModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn edit-close-btn">&times;</span>
+            <h2>Edit User: <span id="edit-username-title"></span></h2>
+            <form id="editUserForm">
+                <input type="hidden" id="edit-id" name="id">
+
+                <div class="form-group">
+                    <label for="edit-username">Username</label>
+                    <input type="text" id="edit-username" name="username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-email">Email</label>
+                    <input type="email" id="edit-email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-password">New Password (Leave blank to keep old)</label>
+                    <input type="password" id="edit-password" name="password" minlength="6">
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-firstName">First Name</label>
+                    <input type="text" id="edit-firstName" name="firstName">
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-lastName">Last Name</label>
+                    <input type="text" id="edit-lastName" name="lastName">
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-role">Role</label>
+                    <select id="edit-role" name="role" required>
+                        <option value="client">Client</option>
+                        <option value="waiter">Waiter</option>
+                        <option value="cook">Cook</option>
+                        <option value="manager">Manager</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-isActive">Status</label>
+                    <select id="edit-isActive" name="isActive" required>
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
+                    </select>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="submit-btn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- Element Selection ---
+        const addUserModal = document.getElementById("addUserModal");
+        const showAddUserBtn = document.getElementById("showAddUserModal");
+        const addCloseBtn = document.querySelector(".add-close-btn");
+        const addUserForm = document.getElementById("addUserForm");
+
+        const editUserModal = document.getElementById("editUserModal");
+        const editCloseBtn = document.querySelector(".edit-close-btn");
+        const editUserForm = document.getElementById("editUserForm");
+
+        const mainContent = document.querySelector(".main-content");
+
+        // --- Helper: Message Display (Toast) ---
+        function showMessage(type, text) {
+            // Remove any existing temporary messages
+            document.querySelectorAll('.success-message, .error-message').forEach(el => el.remove());
+
+            // Create the new message element
+            const msgDiv = document.createElement('div');
+            msgDiv.className = type === 'success' ? 'success-message' : 'error-message';
+            msgDiv.innerHTML = `${type === 'success' ? '✓' : '✗'} <strong>${text}</strong>`;
+
+            // Insert it at the top of the main content
+            mainContent.prepend(msgDiv);
+
+            // Auto-hide the message after 3 seconds
+            setTimeout(() => {
+                msgDiv.style.opacity = '0';
+                setTimeout(() => msgDiv.remove(), 500); // Remove after fading out
+            }, 3000);
+        }
+
+        // --- Modal Control Functions ---
+        
+        // Add User Modal Handlers
+        showAddUserBtn.onclick = function (event) {
+            event.preventDefault();
+            addUserModal.style.display = "block";
+        }
+
+        addCloseBtn.onclick = function () {
+            addUserModal.style.display = "none";
+        }
+
+        // Edit User Modal Handlers
+        function openEditModal(button) {
+            // 1. Get user data from the button's data attribute
+            const userData = JSON.parse(button.getAttribute('data-user'));
+
+            // 2. Populate the form fields with existing data
+            document.getElementById('edit-id').value = userData._id;
+            document.getElementById('edit-username-title').textContent = userData.username;
+
+            document.getElementById('edit-username').value = userData.username;
+            document.getElementById('edit-email').value = userData.email;
+            document.getElementById('edit-firstName').value = userData.firstName || '';
+            document.getElementById('edit-lastName').value = userData.lastName || '';
+
+            // Set selected values for dropdowns (using .toString() for isActive just in case)
+            document.getElementById('edit-role').value = userData.role;
+            document.getElementById('edit-isActive').value = userData.isActive.toString();
+
+            // Reset password field to empty for security/convenience
+            document.getElementById('edit-password').value = '';
+
+            // 3. Display the modal
+            editUserModal.style.display = "block";
+        }
+
+        editCloseBtn.onclick = function () {
+            editUserModal.style.display = "none";
+        }
+
+        // Close Modals when clicking outside
+        window.onclick = function (event) {
+            if (event.target === addUserModal) {
+                addUserModal.style.display = "none";
+            }
+            if (event.target === editUserModal) {
+                editUserModal.style.display = "none";
+            }
+        }
+
+        // --- AJAX Form Submission: Add User (POST) ---
+        addUserForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch('/api/staff/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    addUserModal.style.display = "none";
+                    addUserForm.reset(); 
+                    
+                    showMessage('success', 'New user created successfully! Refreshing page...');
+                    // Automatically reload to display the new user in the table
+                    setTimeout(() => { window.location.reload(); }, 1500);
+
+                } else {
+                    const errorData = await response.json();
+                    showMessage('error', `Error creating user: ${errorData.message || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('Submission failed:', error);
+                showMessage('error', 'A network error occurred while creating the user.');
+            }
+        });
+
+        // --- AJAX Form Submission: Edit User (PUT) ---
+        editUserForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+
+            // Extract ID and remove it from the body payload
+            const userId = data.id;
+            delete data.id; 
+
+            // Filter data to only send non-empty/non-null fields (especially for optional password)
+            const updates = {};
+            for (const key in data) {
+                if (data[key] !== '' && data[key] !== null) {
+                    // Convert 'true'/'false' string for isActive back to boolean for the API
+                    if (key === 'isActive') {
+                        updates[key] = (data[key] === 'true');
+                    } else {
+                        updates[key] = data[key];
+                    }
+                }
+            }
+
+            try {
+                const response = await fetch(`/api/staff/users/${userId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updates)
+                });
+
+                if (response.ok) {
+                    editUserModal.style.display = "none";
+
+                    showMessage('success', `User ${userId.substring(0, 5)}... updated successfully! Refreshing page...`);
+
+                    // Reload the whole page to show the updated user in the table
+                    setTimeout(() => { window.location.reload(); }, 1500);
+
+                } else {
+                    const errorData = await response.json();
+                    showMessage('error', `Error updating user: ${errorData.message || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('Update submission failed:', error);
+                showMessage('error', 'A network error occurred while updating the user.');
+            }
+        });
+
+    </script>
+</body>
+
+</html>

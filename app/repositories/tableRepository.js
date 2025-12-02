@@ -1,6 +1,6 @@
 // src/repositories/Table.repository.js
 
-const BaseRepository = require('./Base.repository');
+const BaseRepository = require('./baseRepository');
 const TableModel = require('../models/table'); // Assuming path to your Table model
 
 class TableRepository extends BaseRepository {

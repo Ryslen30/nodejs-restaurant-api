@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const orderController = require('../../../controllers/backOffice/Order.controller');
-const { authenticateStaff, authorizeRoles } = require('../../../middlewares/Auth.middleware');
+const orderController = require('../../controllers/back-office/OrderController');
+const { authenticateStaff, authorizeRoles } = require('../../../app/middlewares/auhtenticationMiddleware');
 
 // Routes defined here will be mounted under /api/staff/kitchen
 

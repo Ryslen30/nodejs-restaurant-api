@@ -7,29 +7,32 @@ const JWT_SECRET = process.env.JWT_SECRET
 /**
  * Middleware to authenticate staff using JWT from the Authorization header.
  */
+/**
+ * Middleware to authenticate staff using JWT from the HTTP-Only Cookie.
+ */
 exports.authenticateStaff = (req, res, next) => {
-    // 1. Check for Token in Headers
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ message: 'Authentication required. No token provided.' });
-    }
+    // 1. Check for Token in Cookies
+    const token = req.cookies.staffToken; 
 
-    // Extract the token (e.g., "Bearer tokenValue")
-    const token = authHeader.split(' ')[1];
+    if (!token) {
+        // No token found. Clear any stale cookie and redirect to login.
+        res.clearCookie('staffToken'); 
+        // Redirect to your login view (adjust the path if needed)
+        return res.status(401).redirect('/api/staff/login?error=Session required.'); 
+    }
 
     try {
         // 2. Verify and Decode the Token
         const decoded = jwt.verify(token, JWT_SECRET);
         
         // 3. Attach User Info to Request
-        // The decoded payload includes { id, username, role } from the AuthService.generateToken
         req.user = decoded; 
         
-        // Proceed to the Controller or next middleware
-        next();
+        next(); // Token is valid, proceed to controller (e.g., showUsers)
     } catch (error) {
-        // Token is invalid, expired, or tampered with
-        return res.status(401).json({ message: 'Invalid or expired token.' });
+        // Token is invalid or expired - clear cookie and redirect
+        res.clearCookie('staffToken');
+        return res.status(401).redirect('/api/staff/login?error=Session expired.');
     }
 };
 

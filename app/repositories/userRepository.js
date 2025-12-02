@@ -1,6 +1,6 @@
 // src/repositories/User.repository.js
 
-const BaseRepository = require('./Base.repository');
+const BaseRepository = require('./baseRepository');
 const UserModel = require('../models/user'); // Assuming path to your User model
 
 class UserRepository extends BaseRepository {
@@ -23,4 +23,4 @@ class UserRepository extends BaseRepository {
     }
 }
 
-module.exports = UserRepository;
+module.exports = new UserRepository();
