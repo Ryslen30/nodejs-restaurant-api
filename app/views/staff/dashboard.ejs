@@ -36,23 +36,21 @@
     </div>
 
     <div class="dashboard-wrapper">
-        <div class="sidebar">
+           <div class="sidebar">
             <h3>Navigation 🧭</h3>
             <ul class="sidebar-nav">
-                <li><a href="/api/staff/dashboard" class="<%= currentPage === 'dashboard' ? 'active' : '' %>">🏠 Dashboard Home</a></li> 
-                
-                <li>
-                    <a href="/api/staff/users" class="<%= currentPage === 'users' ? 'active' : '' %>">
-                        🧑‍💻 Users Management
-                    </a>
-                </li> 
-                
-                <li>
-                    <a href="/api/staff/tables" class="<%= currentPage === 'tables' ? 'active' : '' %>">
-                        📊 Tables View
-                    </a>
-                </li>
-                
+                <li><a href="/api/staff/dashboard" class="<%= currentPage === 'dashboard' ? 'active' : '' %>">🏠
+                        Dashboard Home</a></li>
+                <li><a href="/api/staff/users" class="<%= currentPage === 'users' ? 'active' : '' %>">🧑‍💻 Users
+                        Management</a></li>
+                <li><a href="/api/staff/tables" class="<%= currentPage === 'tables' ? 'active' : '' %>">📊 Tables
+                        Management</a></li>
+                <li><a href="/api/staff/products" class="<%= currentPage === 'products' ? 'active' : '' %>">📦 Products
+                        Management</a></li>
+                <li><a href="/api/staff/orders" class="<%= currentPage === 'orders' ? 'active' : '' %>">📊 Orders Management
+                </a></li>
+                <li><a href="/api/staff/categories" class="<%= currentPage === 'categories' ? 'active' : '' %>">🏷️
+                        Category Management</a></li>
             </ul>
         </div>
 

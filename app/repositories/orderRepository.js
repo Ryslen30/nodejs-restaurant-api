@@ -38,6 +38,23 @@ class OrderRepository extends BaseRepository {
         .populate('items.product', 'name price') // Populate item details if needed
         .exec();
     }
+
+    async findWithPopulationAndLimit(filter, populatePaths, limit, sort) {
+    return this.model.find(filter)
+        .sort(sort)
+        .limit(limit)
+        .populate(populatePaths.filter(path => path !== 'items.product')) // Simplified population for dashboard
+        .lean()
+        .exec();
 }
 
-module.exports = OrderRepository;
+// 2. For getOrderById
+async findByIdWithPopulation(id, populatePaths) {
+    return this.model.findById(id)
+        .populate(populatePaths)
+        .lean()
+        .exec();
+}
+}
+
+module.exports = new  OrderRepository;

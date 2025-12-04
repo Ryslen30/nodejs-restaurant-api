@@ -8,8 +8,15 @@ const clientOrderRoutes = require('./front-office/OrderRoutes');
 // --- BACK OFFICE IMPORTS ---
 const staffAuthRoutes = require('./back-office/AuthRoutes');
 const staffUserRoutes = require('./back-office/UserRoutes');
+const staffTableRoutes = require('./back-office/TableRoutes');
+const staffProductRoutes = require('./back-office//ProductRoutes');
+
 const staffKitchenRoutes = require('./back-office/kitchenOrderRoutes');
 const staffMenuRoutes = require('./back-office/MenuRoutes');
+
+const staffOrderRoutes = require('./back-office/OrderRoutes');
+const staffCategoryRoutes = require('./back-office/CategoryRoutes');
+
 
 
 
@@ -23,9 +30,10 @@ const staffRouter = express.Router();
 
 // FRONT OFFICE MODULES (Prefixes applied here)
 // /client/menu
-clientRouter.use('/menu', clientMenuRoutes); 
-// /client/orders
-clientRouter.use('/orders', clientOrderRoutes); 
+// clientRouter.use('/menu', clientMenuRoutes);
+
+
+
 
 
 // BACK OFFICE MODULES (Prefixes applied here)
@@ -36,9 +44,21 @@ staffRouter.use('/', staffAuthRoutes);
 // /staff/users
 staffRouter.use('/users', staffUserRoutes);
 // /staff/kitchen
-staffRouter.use('/kitchen', staffKitchenRoutes); 
+// staffRouter.use('/kitchen', staffKitchenRoutes); 
 // /staff/menu
-staffRouter.use('/menu', staffMenuRoutes); 
+// staffRouter.use('/menu', staffMenuRoutes); 
+
+staffRouter.use('/tables', staffTableRoutes);
+
+
+// /staff/products
+staffRouter.use('/products', staffProductRoutes);
+
+// /staff/categories
+staffRouter.use('/categories', staffCategoryRoutes);
+
+// /staff/orders
+staffRouter.use('/orders', staffOrderRoutes);
 
 
 

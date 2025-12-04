@@ -4,10 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Users Management - Staff Dashboard</title>
-    
+    <title>Categories Management - Staff Dashboard</title>
+
     <style>
-         /* --- Base Styles --- */
+        /* --- General Reset & Layout --- */
         * {
             margin: 0;
             padding: 0;
@@ -20,7 +20,6 @@
             min-height: 100vh;
         }
 
-        /* --- Layout & Header --- */
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -34,7 +33,7 @@
 
         .dashboard-wrapper {
             display: flex;
-            min-height: calc(100vh - 84px);
+            min-height: calc(100vh - 64px);
         }
 
         /* --- Sidebar --- */
@@ -100,13 +99,13 @@
         }
 
         /* --- Table and Actions --- */
-        .user-actions {
+        .table-actions {
             display: flex;
             justify-content: flex-end;
             margin-bottom: 20px;
         }
 
-        .add-user-btn {
+        .add-category-btn {
             background: #28a745;
             color: white;
             padding: 10px 15px;
@@ -118,16 +117,16 @@
             transition: background 0.3s;
         }
 
-        .add-user-btn:hover {
+        .add-category-btn:hover {
             background: #218838;
         }
 
-        .users-table {
+        .categories-table {
             width: 100%;
             border-collapse: collapse;
         }
 
-        .users-table thead th {
+        .categories-table thead th {
             background-color: #f8f9fa;
             color: #333;
             text-align: left;
@@ -136,14 +135,14 @@
             font-weight: 600;
         }
 
-        .users-table tbody td {
+        .categories-table tbody td {
             padding: 12px 15px;
             border-bottom: 1px solid #eee;
             color: #555;
             vertical-align: middle;
         }
 
-        .users-table tbody tr:hover {
+        .categories-table tbody tr:hover {
             background-color: #f1f1f1;
         }
 
@@ -175,12 +174,13 @@
             background: #c82333;
         }
 
-        .status-active {
+        /* Status classes for isActive */
+        .status-Active {
             color: #28a745;
             font-weight: 600;
         }
 
-        .status-inactive {
+        .status-Inactive {
             color: #dc3545;
             font-weight: 600;
         }
@@ -250,7 +250,8 @@
         }
 
         .form-group input,
-        .form-group select {
+        .form-group select,
+        .form-group textarea {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
@@ -282,6 +283,10 @@
         }
 
         /* --- Messages (Success/Error) --- */
+        .message-container {
+            /* Wrapper for dynamic messages */
+        }
+        
         .success-message {
             padding: 15px;
             margin-bottom: 20px;
@@ -290,6 +295,7 @@
             background-color: #d4edda;
             border-radius: 5px;
             font-weight: bold;
+            opacity: 1; /* Ensure visible on creation */
             transition: opacity 0.5s ease-out;
         }
 
@@ -301,9 +307,9 @@
             background-color: #f8d7da;
             border-radius: 5px;
             font-weight: bold;
+            opacity: 1; /* Ensure visible on creation */
             transition: opacity 0.5s ease-out;
         }
-       
     </style>
 </head>
 
@@ -313,7 +319,7 @@
     </div>
 
     <div class="dashboard-wrapper">
-            <div class="sidebar">
+             <div class="sidebar">
             <h3>Navigation 🧭</h3>
             <ul class="sidebar-nav">
                 <li><a href="/api/staff/dashboard" class="<%= currentPage === 'dashboard' ? 'active' : '' %>">🏠
@@ -333,85 +339,70 @@
 
         <div class="main-content">
             <% if (message) { %>
-                <div class="success-message">
-                    ✓ <%= message %>
+                <div class="<%= message.includes('Error') || message.includes('Failed') ? 'error-message' : 'success-message' %>">
+                    <%= message.includes('Error') || message.includes('Failed') ? '✗' : '✓' %>
+                    <%= message %>
                 </div>
             <% } %>
 
-            <div class="dashboard-card">
-                <h2>Users Management (<%= users.length %> Total)</h2>
+            <div id="ajaxMessageContainer"></div>
 
-                <div class="user-actions">
-                    <button id="showAddUserModal" class="add-user-btn">
-                        + Add New User
+            <div class="dashboard-card">
+                <h2>Category Management (<%= categories.length %> Total)</h2>
+
+                <div class="table-actions">
+                    <button id="showAddCategoryModal" class="add-category-btn">
+                        + Add New Category
                     </button>
                 </div>
 
-                <table class="users-table">
+                <table class="categories-table">
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Username</th>
-                            <th>Email</th>
-                            <th>Role</th>
+                            <th>Name</th>
+                            <th>Description</th>
                             <th>Status</th>
                             <th>Created On</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <% users.forEach(user => { %>
+                        <% categories.forEach(category => { %>
                             <tr>
+                                <td><%= category._id.toString().substring(0, 5) %>...</td>
+                                <td><%= category.name %></td>
+                                <td><%= category.description || 'N/A' %></td>
                                 <td>
-                                    <%= user._id.toString().substring(0, 5) %>...
-                                </td>
-                                <td>
-                                    <%= user.username %>
-                                </td>
-                                <td>
-                                    <%= user.email %>
-                                </td>
-                                <td>
-                                    <%= user.role %>
-                                </td>
-                                <td>
-                                    <% 
-                                        const active = user.isActive; 
-                                        const statusText = active ? 'Active' : 'Inactive';
-                                        const statusClass = active ? 'active' : 'inactive'; 
-                                    %>
-                                    <span class="status-<%= statusClass %>">
-                                        <%= statusText %>
+                                    <span class="status-<%= category.isActive ? 'Active' : 'Inactive' %>">
+                                        <%= category.isActive ? 'Active' : 'Inactive' %>
                                     </span>
                                 </td>
                                 <td>
-                                    <% if (user.createdAt) { %>
-                                        <%= new Date(user.createdAt).toLocaleDateString() %>
+                                    <% if (category.createdAt) { %>
+                                        <%= new Date(category.createdAt).toLocaleDateString() %>
                                     <% } else { %>
                                         N/A
                                     <% } %>
                                 </td>
                                 <td>
-                                    <button class="action-btn edit-btn" data-user='<%= JSON.stringify(user) %>'
-                                        onclick="openEditModal(this)">
+                                    <button class="action-btn edit-btn"
+                                        data-category='<%= JSON.stringify(category) %>' onclick="openEditCategoryModal(this)">
                                         Edit
                                     </button>
-
-                                    <button class="action-btn delete-btn"
-                                        onclick="if(confirm('Are you sure you want to delete <%= user.username %>? This cannot be undone.')) { document.getElementById('delete-<%= user._id %>').submit(); }">
+                                    <button class="action-btn delete-btn" 
+                                        data-id="<%= category._id %>"
+                                        data-category-name="<%= category.name %>"
+                                        onclick="deleteCategory(this)">
                                         Delete
                                     </button>
-                                    <form id="delete-<%= user._id %>" method="post"
-                                        action="/api/staff/users/<%= user._id %>?_method=DELETE" style="display:none;">
-                                        <input type="hidden" name="_method" value="DELETE">
-                                    </form>
                                 </td>
                             </tr>
                         <% }); %>
 
-                        <% if (users.length === 0) { %>
+                        <% if (categories.length === 0) { %>
                             <tr>
-                                <td colspan="7" style="text-align: center; padding: 20px;">No users found.</td>
+                                <td colspan="6" style="text-align: center; padding: 20px;">No categories found.</td>
                             </tr>
                         <% } %>
                     </tbody>
@@ -420,111 +411,59 @@
         </div>
     </div>
 
-    <div id="addUserModal" class="modal">
+    <div id="addCategoryModal" class="modal">
         <div class="modal-content">
             <span class="close-btn add-close-btn">&times;</span>
-            <h2>Create New User</h2>
-            <form id="addUserForm">
-
+            <h2>Create New Category</h2>
+            <form id="addCategoryForm"> 
+                
                 <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" name="username" required>
+                    <label for="categoryName">Category Name (Required)</label>
+                    <input type="text" id="categoryName" name="name" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" required>
+                    <label for="categoryDescription">Description</label>
+                    <textarea id="categoryDescription" name="description"></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required minlength="6">
-                </div>
-
-                <div class="form-group">
-                    <label for="firstName">First Name</label>
-                    <input type="text" id="firstName" name="firstName">
-                </div>
-
-                <div class="form-group">
-                    <label for="lastName">Last Name</label>
-                    <input type="text" id="lastName" name="lastName">
-                </div>
-
-                <div class="form-group">
-                    <label for="role">Role</label>
-                    <select id="role" name="role" required>
-                        <option value="client">Client</option>
-                        <option value="waiter">Waiter</option>
-                        <option value="cook">Cook</option>
-                        <option value="manager">Manager</option>
-                        <option value="admin">Admin</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="isActive">Status</label>
-                    <select id="isActive" name="isActive" required>
-                        <option value="true">Active</option>
-                        <option value="false">Inactive</option>
+                    <label for="categoryIsActive">Is Active (Visible on Menu)?</label>
+                    <select id="categoryIsActive" name="isActive" required>
+                        <option value="true">Yes (Active)</option>
+                        <option value="false">No (Inactive)</option>
                     </select>
                 </div>
 
                 <div class="form-actions">
-                    <button type="submit" class="submit-btn">Create User</button>
+                    <button type="submit" class="submit-btn">Create Category</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <div id="editUserModal" class="modal">
+    <div id="editCategoryModal" class="modal">
         <div class="modal-content">
             <span class="close-btn edit-close-btn">&times;</span>
-            <h2>Edit User: <span id="edit-username-title"></span></h2>
-            <form id="editUserForm">
-                <input type="hidden" id="edit-id" name="id">
+            <h2>Edit Category: <span id="edit-category-name-title"></span></h2>
+            <form id="editCategoryForm"> 
+                <input type="hidden" id="edit-id" name="id"> 
 
                 <div class="form-group">
-                    <label for="edit-username">Username</label>
-                    <input type="text" id="edit-username" name="username" required>
+                    <label for="edit-name">Category Name (Required)</label>
+                    <input type="text" id="edit-name" name="name" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="edit-email">Email</label>
-                    <input type="email" id="edit-email" name="email" required>
+                    <label for="edit-description">Description</label>
+                    <textarea id="edit-description" name="description"></textarea>
                 </div>
-
+                
                 <div class="form-group">
-                    <label for="edit-password">New Password (Leave blank to keep old)</label>
-                    <input type="password" id="edit-password" name="password" minlength="6">
-                </div>
-
-                <div class="form-group">
-                    <label for="edit-firstName">First Name</label>
-                    <input type="text" id="edit-firstName" name="firstName">
-                </div>
-
-                <div class="form-group">
-                    <label for="edit-lastName">Last Name</label>
-                    <input type="text" id="edit-lastName" name="lastName">
-                </div>
-
-                <div class="form-group">
-                    <label for="edit-role">Role</label>
-                    <select id="edit-role" name="role" required>
-                        <option value="client">Client</option>
-                        <option value="waiter">Waiter</option>
-                        <option value="cook">Cook</option>
-                        <option value="manager">Manager</option>
-                        <option value="admin">Admin</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="edit-isActive">Status</label>
+                    <label for="edit-isActive">Is Active (Visible on Menu)?</label>
                     <select id="edit-isActive" name="isActive" required>
-                        <option value="true">Active</option>
-                        <option value="false">Inactive</option>
+                        <option value="true">Yes (Active)</option>
+                        <option value="false">No (Inactive)</option>
                     </select>
                 </div>
 
@@ -537,169 +476,180 @@
 
     <script>
         // --- Element Selection ---
-        const addUserModal = document.getElementById("addUserModal");
-        const showAddUserBtn = document.getElementById("showAddUserModal");
-        const addCloseBtn = document.querySelector(".add-close-btn");
-        const addUserForm = document.getElementById("addUserForm");
+        const addCategoryModal = document.getElementById("addCategoryModal");
+        const showAddCategoryBtn = document.getElementById("showAddCategoryModal");
+        const addCloseBtn = document.querySelector("#addCategoryModal .close-btn");
+        const addCategoryForm = document.getElementById("addCategoryForm");
 
-        const editUserModal = document.getElementById("editUserModal");
-        const editCloseBtn = document.querySelector(".edit-close-btn");
-        const editUserForm = document.getElementById("editUserForm");
+        const editCategoryModal = document.getElementById("editCategoryModal");
+        const editCloseBtn = document.querySelector("#editCategoryModal .close-btn");
+        const editCategoryForm = document.getElementById("editCategoryForm");
 
         const mainContent = document.querySelector(".main-content");
 
         // --- Helper: Message Display (Toast) ---
         function showMessage(type, text) {
-            // Remove any existing temporary messages
+            // Remove any existing messages
             document.querySelectorAll('.success-message, .error-message').forEach(el => el.remove());
-
-            // Create the new message element
+            
             const msgDiv = document.createElement('div');
             msgDiv.className = type === 'success' ? 'success-message' : 'error-message';
             msgDiv.innerHTML = `${type === 'success' ? '✓' : '✗'} <strong>${text}</strong>`;
-
-            // Insert it at the top of the main content
+            
+            // Prepend the message directly into the main content wrapper
             mainContent.prepend(msgDiv);
-
-            // Auto-hide the message after 3 seconds
+            
+            // Set timeout for message disappearance
             setTimeout(() => {
-                msgDiv.style.opacity = '0';
-                setTimeout(() => msgDiv.remove(), 500); // Remove after fading out
+                // Ensure opacity transition works
+                msgDiv.style.opacity = '0'; 
+                setTimeout(() => msgDiv.remove(), 500);
             }, 3000);
         }
 
         // --- Modal Control Functions ---
-        
-        // Add User Modal Handlers
-        showAddUserBtn.onclick = function (event) {
+        showAddCategoryBtn.onclick = function (event) {
             event.preventDefault();
-            addUserModal.style.display = "block";
+            addCategoryModal.style.display = "block";
+            addCategoryForm.reset();
         }
 
         addCloseBtn.onclick = function () {
-            addUserModal.style.display = "none";
+            addCategoryModal.style.display = "none";
         }
 
-        // Edit User Modal Handlers
-        function openEditModal(button) {
-            // 1. Get user data from the button's data attribute
-            const userData = JSON.parse(button.getAttribute('data-user'));
+        /**
+         * Populates and opens the Edit Category modal.
+         * @param {HTMLElement} button - The clicked 'Edit' button.
+         */
+        function openEditCategoryModal(button) {
+            const categoryData = JSON.parse(button.getAttribute('data-category'));
 
-            // 2. Populate the form fields with existing data
-            document.getElementById('edit-id').value = userData._id;
-            document.getElementById('edit-username-title').textContent = userData.username;
+            document.getElementById('edit-id').value = categoryData._id;
+            document.getElementById('edit-category-name-title').textContent = categoryData.name;
+            document.getElementById('edit-name').value = categoryData.name;
+            document.getElementById('edit-description').value = categoryData.description || '';
+            
+            // Set Boolean fields (convert boolean to string 'true' or 'false')
+            document.getElementById('edit-isActive').value = categoryData.isActive.toString();
 
-            document.getElementById('edit-username').value = userData.username;
-            document.getElementById('edit-email').value = userData.email;
-            document.getElementById('edit-firstName').value = userData.firstName || '';
-            document.getElementById('edit-lastName').value = userData.lastName || '';
-
-            // Set selected values for dropdowns (using .toString() for isActive just in case)
-            document.getElementById('edit-role').value = userData.role;
-            document.getElementById('edit-isActive').value = userData.isActive.toString();
-
-            // Reset password field to empty for security/convenience
-            document.getElementById('edit-password').value = '';
-
-            // 3. Display the modal
-            editUserModal.style.display = "block";
+            editCategoryModal.style.display = "block";
         }
 
         editCloseBtn.onclick = function () {
-            editUserModal.style.display = "none";
+            editCategoryModal.style.display = "none";
         }
 
         // Close Modals when clicking outside
         window.onclick = function (event) {
-            if (event.target === addUserModal) {
-                addUserModal.style.display = "none";
+            if (event.target === addCategoryModal) {
+                addCategoryModal.style.display = "none";
             }
-            if (event.target === editUserModal) {
-                editUserModal.style.display = "none";
+            if (event.target === editCategoryModal) {
+                editCategoryModal.style.display = "none";
             }
         }
+        
+        // Global function references needed for EJS onclick attribute
+        window.openEditCategoryModal = openEditCategoryModal; 
+        
+        /**
+         * Handles AJAX DELETE request for a category.
+         * @param {HTMLElement} button - The clicked 'Delete' button.
+         */
+        async function deleteCategory(button) {
+            const categoryId = button.getAttribute('data-id');
+            const categoryName = button.getAttribute('data-category-name');
 
-        // --- AJAX Form Submission: Add User (POST) ---
-        addUserForm.addEventListener('submit', async function (e) {
+            if (!confirm(`Are you sure you want to delete the category "${categoryName}"? This action is irreversible and may affect linked products.`)) {
+                return;
+            }
+
+            // Simple redirect for DELETE, relying on server-side message handling/redirect on success/failure
+            window.location.href = `/api/staff/categories/${categoryId}/delete`; 
+        }
+        
+        window.deleteCategory = deleteCategory; // Global function reference
+
+        // --- AJAX Form Submission: Add Category (POST) ---
+        addCategoryForm.addEventListener('submit', async function (e) {
             e.preventDefault();
 
             const formData = new FormData(this);
             const data = Object.fromEntries(formData.entries());
+            
+            // Convert 'true'/'false' strings to actual booleans
+            data.isActive = data.isActive === 'true';
 
             try {
-                const response = await fetch('/api/staff/users', {
+                const response = await fetch('/api/staff/categories', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
 
+                const responseData = await response.json();
+
                 if (response.ok) {
-                    addUserModal.style.display = "none";
-                    addUserForm.reset(); 
+                    addCategoryModal.style.display = "none";
+                    addCategoryForm.reset();
+
+                    // 1. Show message immediately.
+                    showMessage('success', 'New category created successfully! Refreshing page...');
                     
-                    showMessage('success', 'New user created successfully! Refreshing page...');
-                    // Automatically reload to display the new user in the table
-                    setTimeout(() => { window.location.reload(); }, 1500);
+                    // 2. Delay the full page reload slightly to ensure the message renders.
+                    setTimeout(() => { 
+                        window.location.reload(); 
+                    }, 1500); 
 
                 } else {
-                    const errorData = await response.json();
-                    showMessage('error', `Error creating user: ${errorData.message || 'Unknown error'}`);
+                    // Handle server-side errors (400, 409, etc.)
+                    showMessage('error', `Error creating category: ${responseData.error || responseData.message}`);
                 }
             } catch (error) {
                 console.error('Submission failed:', error);
-                showMessage('error', 'A network error occurred while creating the user.');
+                showMessage('error', 'A network error occurred while creating the category.');
             }
         });
 
-        // --- AJAX Form Submission: Edit User (PUT) ---
-        editUserForm.addEventListener('submit', async function (e) {
+        // --- AJAX Form Submission: Edit Category (PUT) ---
+        editCategoryForm.addEventListener('submit', async function (e) {
             e.preventDefault();
 
             const formData = new FormData(this);
             const data = Object.fromEntries(formData.entries());
 
-            // Extract ID and remove it from the body payload
-            const userId = data.id;
+            const categoryId = data.id;
             delete data.id; 
 
-            // Filter data to only send non-empty/non-null fields (especially for optional password)
-            const updates = {};
-            for (const key in data) {
-                if (data[key] !== '' && data[key] !== null) {
-                    // Convert 'true'/'false' string for isActive back to boolean for the API
-                    if (key === 'isActive') {
-                        updates[key] = (data[key] === 'true');
-                    } else {
-                        updates[key] = data[key];
-                    }
-                }
-            }
+            // Convert 'true'/'false' strings to actual booleans
+            data.isActive = data.isActive === 'true';
 
             try {
-                const response = await fetch(`/api/staff/users/${userId}`, {
+                const response = await fetch(`/api/staff/categories/${categoryId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(updates)
+                    body: JSON.stringify(data)
                 });
 
+                const responseData = await response.json();
+
                 if (response.ok) {
-                    editUserModal.style.display = "none";
-
-                    showMessage('success', `User ${userId.substring(0, 5)}... updated successfully! Refreshing page...`);
-
-                    // Reload the whole page to show the updated user in the table
-                    setTimeout(() => { window.location.reload(); }, 1500);
-
+                    editCategoryModal.style.display = "none";
+                    showMessage('success', `Category updated successfully! Refreshing page...`);
+                    
+                    setTimeout(() => { 
+                        window.location.reload(); 
+                    }, 1500);
+                    
                 } else {
-                    const errorData = await response.json();
-                    showMessage('error', `Error updating user: ${errorData.message || 'Unknown error'}`);
+                    showMessage('error', `Error updating category: ${responseData.error || responseData.message}`);
                 }
             } catch (error) {
                 console.error('Update submission failed:', error);
-                showMessage('error', 'A network error occurred while updating the user.');
+                showMessage('error', 'A network error occurred while updating the category.');
             }
         });
-
     </script>
 </body>
 

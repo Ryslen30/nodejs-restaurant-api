@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 
+
 // custumization 
 
 const CustomizationSchema = new Schema({
@@ -51,10 +52,9 @@ const OrderSchema = new Schema({
         ref: 'Table',
         required: true
     },
-    client: {
-        // Reference to the User model, null if a non-client placed the order
-        type: Schema.Types.ObjectId,
-        ref: 'User',
+   user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User', // Reference to your User/Client model
         default: null
     },
     items: [OrderItemSchema],

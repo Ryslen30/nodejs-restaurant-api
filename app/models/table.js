@@ -9,11 +9,11 @@ const TableSchema =  new Schema({
         trim: true
     },
     ipAddress: {
-        // The IP address of the tablet assigned to this table
-        type: String,
-        required: [false, 'IP address is required for tablet mapping'],
-        unique: true,
-        trim: true
+        type: Schema.Types.ObjectId,
+        ref: 'Device', 
+        unique: true, // Crucial: A device can only be on ONE table
+        required: false,
+        
     },
     status: {
         type: String,
@@ -27,7 +27,8 @@ const TableSchema =  new Schema({
         default: null
     }
 }, {
-    timestamps: true
+    timestamps: true,
+    versionKey: false
 });
 
 module.exports = mongoose.model('Table', TableSchema);

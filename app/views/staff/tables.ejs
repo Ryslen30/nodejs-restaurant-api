@@ -4,10 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Users Management - Staff Dashboard</title>
-    
+    <title>Tables Management - Staff Dashboard</title>
+
     <style>
-         /* --- Base Styles --- */
+        /* [Your existing CSS goes here] */
         * {
             margin: 0;
             padding: 0;
@@ -34,7 +34,8 @@
 
         .dashboard-wrapper {
             display: flex;
-            min-height: calc(100vh - 84px);
+            /* Recalculate if needed based on final header height */
+            min-height: calc(100vh - 64px); 
         }
 
         /* --- Sidebar --- */
@@ -100,13 +101,13 @@
         }
 
         /* --- Table and Actions --- */
-        .user-actions {
+        .table-actions {
             display: flex;
             justify-content: flex-end;
             margin-bottom: 20px;
         }
 
-        .add-user-btn {
+        .add-table-btn {
             background: #28a745;
             color: white;
             padding: 10px 15px;
@@ -118,16 +119,16 @@
             transition: background 0.3s;
         }
 
-        .add-user-btn:hover {
+        .add-table-btn:hover {
             background: #218838;
         }
 
-        .users-table {
+        .tables-table {
             width: 100%;
             border-collapse: collapse;
         }
 
-        .users-table thead th {
+        .tables-table thead th {
             background-color: #f8f9fa;
             color: #333;
             text-align: left;
@@ -136,14 +137,14 @@
             font-weight: 600;
         }
 
-        .users-table tbody td {
+        .tables-table tbody td {
             padding: 12px 15px;
             border-bottom: 1px solid #eee;
             color: #555;
             vertical-align: middle;
         }
 
-        .users-table tbody tr:hover {
+        .tables-table tbody tr:hover {
             background-color: #f1f1f1;
         }
 
@@ -175,13 +176,20 @@
             background: #c82333;
         }
 
-        .status-active {
+        .status-Vacant {
             color: #28a745;
             font-weight: 600;
         }
 
-        .status-inactive {
+        .status-Occupied {
+            color: #ffc107;
+            /* Yellow */
+            font-weight: 600;
+        }
+
+        .status-Needs {
             color: #dc3545;
+            /* Red */
             font-weight: 600;
         }
 
@@ -303,7 +311,6 @@
             font-weight: bold;
             transition: opacity 0.5s ease-out;
         }
-       
     </style>
 </head>
 
@@ -313,7 +320,7 @@
     </div>
 
     <div class="dashboard-wrapper">
-            <div class="sidebar">
+           <div class="sidebar">
             <h3>Navigation 🧭</h3>
             <ul class="sidebar-nav">
                 <li><a href="/api/staff/dashboard" class="<%= currentPage === 'dashboard' ? 'active' : '' %>">🏠
@@ -339,79 +346,81 @@
             <% } %>
 
             <div class="dashboard-card">
-                <h2>Users Management (<%= users.length %> Total)</h2>
+                <h2>Tables Management (<%= tables.length %> Total)</h2>
 
-                <div class="user-actions">
-                    <button id="showAddUserModal" class="add-user-btn">
-                        + Add New User
+                <div class="table-actions">
+                    <button id="showAddTableModal" class="add-table-btn">
+                        + Add New Table
                     </button>
                 </div>
 
-                <table class="users-table">
+                <table class="tables-table">
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Username</th>
-                            <th>Email</th>
-                            <th>Role</th>
+                            <th>Table Number</th>
                             <th>Status</th>
+                            <th>Device Name</th>
+                            <th>Current Order ID</th>
                             <th>Created On</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <% users.forEach(user => { %>
+                        <% tables.forEach(table=> { %>
                             <tr>
                                 <td>
-                                    <%= user._id.toString().substring(0, 5) %>...
+                                    <%= table._id.toString().substring(0, 5) %>...
                                 </td>
                                 <td>
-                                    <%= user.username %>
+                                    <%= table.tableNumber %>
                                 </td>
                                 <td>
-                                    <%= user.email %>
-                                </td>
-                                <td>
-                                    <%= user.role %>
-                                </td>
-                                <td>
-                                    <% 
-                                        const active = user.isActive; 
-                                        const statusText = active ? 'Active' : 'Inactive';
-                                        const statusClass = active ? 'active' : 'inactive'; 
+                                    <% const statusText=table.status; 
+                                       // Use the first part of the status for the class (e.g., 'Needs Cleaning' -> 'status-Needs')
+                                       const statusClass = 'status-' + statusText.split(' ')[0];
                                     %>
-                                    <span class="status-<%= statusClass %>">
+                                    <span class="<%= statusClass %>">
                                         <%= statusText %>
                                     </span>
                                 </td>
                                 <td>
-                                    <% if (user.createdAt) { %>
-                                        <%= new Date(user.createdAt).toLocaleDateString() %>
+                                    <% if (table.ipAddress && table.ipAddress.deviceName) { %>
+                                        <%= table.ipAddress.deviceName %> 
                                     <% } else { %>
                                         N/A
                                     <% } %>
                                 </td>
                                 <td>
-                                    <button class="action-btn edit-btn" data-user='<%= JSON.stringify(user) %>'
-                                        onclick="openEditModal(this)">
+                                    <%= table.currentOrder ? table.currentOrder.toString().substring(0, 5) + '...' : 'None' %>
+                                </td>
+                                <td>
+                                    <% if (table.createdAt) { %>
+                                        <%= new Date(table.createdAt).toLocaleDateString() %>
+                                    <% } else { %>
+                                        N/A
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <button class="action-btn edit-btn"
+                                        data-table='<%= JSON.stringify(table) %>' onclick="openEditModal(this)">
                                         Edit
                                     </button>
 
-                                    <button class="action-btn delete-btn"
-                                        onclick="if(confirm('Are you sure you want to delete <%= user.username %>? This cannot be undone.')) { document.getElementById('delete-<%= user._id %>').submit(); }">
+                                    <button class="action-btn delete-btn" 
+                                        data-id="<%= table._id %>"
+                                        data-table-number="<%= table.tableNumber %>"
+                                        onclick="deleteTable(this)">
                                         Delete
                                     </button>
-                                    <form id="delete-<%= user._id %>" method="post"
-                                        action="/api/staff/users/<%= user._id %>?_method=DELETE" style="display:none;">
-                                        <input type="hidden" name="_method" value="DELETE">
-                                    </form>
                                 </td>
                             </tr>
                         <% }); %>
 
-                        <% if (users.length === 0) { %>
+                        <% if (tables.length===0) { %>
                             <tr>
-                                <td colspan="7" style="text-align: center; padding: 20px;">No users found.</td>
+                                <td colspan="7" style="text-align: center; padding: 20px;">No tables
+                                    found.</td>
                             </tr>
                         <% } %>
                     </tbody>
@@ -420,111 +429,77 @@
         </div>
     </div>
 
-    <div id="addUserModal" class="modal">
+    <div id="addTableModal" class="modal">
         <div class="modal-content">
             <span class="close-btn add-close-btn">&times;</span>
-            <h2>Create New User</h2>
-            <form id="addUserForm">
+            <h2>Create New Table</h2>
+            <form id="addTableForm"> 
 
                 <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" name="username" required>
+                    <label for="tableNumber">Table Number (Required)</label>
+                    <input type="text" id="tableNumber" name="tableNumber" required maxlength="20">
                 </div>
 
                 <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" required>
-                </div>
+                    <label for="ipAddress">Device Assignment (Optional)</label>
+                    <select id="ipAddress" name="ipAddress">
+                        <option value="">-- No Device Assigned --</option>
 
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required minlength="6">
-                </div>
-
-                <div class="form-group">
-                    <label for="firstName">First Name</label>
-                    <input type="text" id="firstName" name="firstName">
-                </div>
-
-                <div class="form-group">
-                    <label for="lastName">Last Name</label>
-                    <input type="text" id="lastName" name="lastName">
-                </div>
-
-                <div class="form-group">
-                    <label for="role">Role</label>
-                    <select id="role" name="role" required>
-                        <option value="client">Client</option>
-                        <option value="waiter">Waiter</option>
-                        <option value="cook">Cook</option>
-                        <option value="manager">Manager</option>
-                        <option value="admin">Admin</option>
+                        <% availableDevices.forEach(device=> { %>
+                            <option value="<%= device._id %>">
+                                <%= device.deviceName %> (<%= device.ipAddress %>)
+                            </option>
+                        <% }); %>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="isActive">Status</label>
-                    <select id="isActive" name="isActive" required>
-                        <option value="true">Active</option>
-                        <option value="false">Inactive</option>
+                    <label for="status">Status</label>
+                    <select id="status" name="status" required>
+                        <option value="Vacant">Vacant</option>
+                        <option value="Occupied">Occupied</option>
+                        <option value="Needs Cleaning">Needs Cleaning</option>
                     </select>
                 </div>
 
                 <div class="form-actions">
-                    <button type="submit" class="submit-btn">Create User</button>
+                    <button type="submit" class="submit-btn">Create Table</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <div id="editUserModal" class="modal">
+    <div id="editTableModal" class="modal">
         <div class="modal-content">
             <span class="close-btn edit-close-btn">&times;</span>
-            <h2>Edit User: <span id="edit-username-title"></span></h2>
-            <form id="editUserForm">
-                <input type="hidden" id="edit-id" name="id">
+            <h2>Edit Table: <span id="edit-table-number-title"></span></h2>
+            <form id="editTableForm"> 
+                <input type="hidden" id="edit-id" name="id"> 
 
                 <div class="form-group">
-                    <label for="edit-username">Username</label>
-                    <input type="text" id="edit-username" name="username" required>
+                    <label for="edit-tableNumber">Table Number (Required)</label>
+                    <input type="text" id="edit-tableNumber" name="tableNumber" required maxlength="20">
                 </div>
 
                 <div class="form-group">
-                    <label for="edit-email">Email</label>
-                    <input type="email" id="edit-email" name="email" required>
-                </div>
+                    <label for="edit-ipAddress">Device Assignment (Optional)</label>
+                    <select id="edit-ipAddress" name="ipAddress">
+                        <option value="">-- No Device Assigned --</option>
 
-                <div class="form-group">
-                    <label for="edit-password">New Password (Leave blank to keep old)</label>
-                    <input type="password" id="edit-password" name="password" minlength="6">
-                </div>
-
-                <div class="form-group">
-                    <label for="edit-firstName">First Name</label>
-                    <input type="text" id="edit-firstName" name="firstName">
-                </div>
-
-                <div class="form-group">
-                    <label for="edit-lastName">Last Name</label>
-                    <input type="text" id="edit-lastName" name="lastName">
-                </div>
-
-                <div class="form-group">
-                    <label for="edit-role">Role</label>
-                    <select id="edit-role" name="role" required>
-                        <option value="client">Client</option>
-                        <option value="waiter">Waiter</option>
-                        <option value="cook">Cook</option>
-                        <option value="manager">Manager</option>
-                        <option value="admin">Admin</option>
+                        <% availableDevices.forEach(device=> { %>
+                            <option value="<%= device._id %>">
+                                <%= device.deviceName %> (<%= device.ipAddress %>)
+                            </option>
+                        <% }); %>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="edit-isActive">Status</label>
-                    <select id="edit-isActive" name="isActive" required>
-                        <option value="true">Active</option>
-                        <option value="false">Inactive</option>
+                    <label for="edit-status">Status</label>
+                    <select id="edit-status" name="status" required>
+                        <option value="Vacant">Vacant</option>
+                        <option value="Occupied">Occupied</option>
+                        <option value="Needs Cleaning">Needs Cleaning</option>
                     </select>
                 </div>
 
@@ -537,166 +512,209 @@
 
     <script>
         // --- Element Selection ---
-        const addUserModal = document.getElementById("addUserModal");
-        const showAddUserBtn = document.getElementById("showAddUserModal");
+        const addTableModal = document.getElementById("addTableModal");
+        const showAddTableBtn = document.getElementById("showAddTableModal");
         const addCloseBtn = document.querySelector(".add-close-btn");
-        const addUserForm = document.getElementById("addUserForm");
+        const addTableForm = document.getElementById("addTableForm");
 
-        const editUserModal = document.getElementById("editUserModal");
+        const editTableModal = document.getElementById("editTableModal");
         const editCloseBtn = document.querySelector(".edit-close-btn");
-        const editUserForm = document.getElementById("editUserForm");
+        const editTableForm = document.getElementById("editTableForm");
 
         const mainContent = document.querySelector(".main-content");
 
         // --- Helper: Message Display (Toast) ---
         function showMessage(type, text) {
-            // Remove any existing temporary messages
             document.querySelectorAll('.success-message, .error-message').forEach(el => el.remove());
-
-            // Create the new message element
             const msgDiv = document.createElement('div');
             msgDiv.className = type === 'success' ? 'success-message' : 'error-message';
             msgDiv.innerHTML = `${type === 'success' ? '✓' : '✗'} <strong>${text}</strong>`;
-
-            // Insert it at the top of the main content
             mainContent.prepend(msgDiv);
-
-            // Auto-hide the message after 3 seconds
             setTimeout(() => {
                 msgDiv.style.opacity = '0';
-                setTimeout(() => msgDiv.remove(), 500); // Remove after fading out
+                setTimeout(() => msgDiv.remove(), 500);
             }, 3000);
         }
 
         // --- Modal Control Functions ---
-        
-        // Add User Modal Handlers
-        showAddUserBtn.onclick = function (event) {
+
+        // Add Table Modal Handlers
+        showAddTableBtn.onclick = function (event) {
             event.preventDefault();
-            addUserModal.style.display = "block";
+            addTableModal.style.display = "block";
+            // Set default values on opening
+            document.getElementById('tableNumber').value = ''; 
+            document.getElementById('ipAddress').value = ''; 
+            document.getElementById('status').value = 'Vacant';
         }
 
         addCloseBtn.onclick = function () {
-            addUserModal.style.display = "none";
+            addTableModal.style.display = "none";
         }
 
-        // Edit User Modal Handlers
+        /**
+         * Populates and opens the Edit Table modal.
+         * @param {HTMLElement} button - The clicked 'Edit' button.
+         */
         function openEditModal(button) {
-            // 1. Get user data from the button's data attribute
-            const userData = JSON.parse(button.getAttribute('data-user'));
+            // 1. Get table data from the button's data attribute
+            const tableData = JSON.parse(button.getAttribute('data-table'));
 
-            // 2. Populate the form fields with existing data
-            document.getElementById('edit-id').value = userData._id;
-            document.getElementById('edit-username-title').textContent = userData.username;
+            // 2. Identify the currently assigned Device ID
+            // Check if ipAddress is a populated object (has _id) or just the ID string. Default to empty string for 'None'
+            const currentDeviceId = (tableData.ipAddress && typeof tableData.ipAddress === 'object' && tableData.ipAddress._id)
+                ? tableData.ipAddress._id
+                : (tableData.ipAddress || ''); // If it's a string ID or null/undefined
 
-            document.getElementById('edit-username').value = userData.username;
-            document.getElementById('edit-email').value = userData.email;
-            document.getElementById('edit-firstName').value = userData.firstName || '';
-            document.getElementById('edit-lastName').value = userData.lastName || '';
+            // 3. Populate the form fields with existing data
+            document.getElementById('edit-id').value = tableData._id;
+            document.getElementById('edit-table-number-title').textContent = tableData.tableNumber;
+            document.getElementById('edit-tableNumber').value = tableData.tableNumber;
 
-            // Set selected values for dropdowns (using .toString() for isActive just in case)
-            document.getElementById('edit-role').value = userData.role;
-            document.getElementById('edit-isActive').value = userData.isActive.toString();
+            // CRITICAL: Set the selected value for the <select> element
+            document.getElementById('edit-ipAddress').value = currentDeviceId;
 
-            // Reset password field to empty for security/convenience
-            document.getElementById('edit-password').value = '';
+            // Set selected value for status dropdown
+            document.getElementById('edit-status').value = tableData.status;
 
-            // 3. Display the modal
-            editUserModal.style.display = "block";
+            // 4. Display the modal
+            editTableModal.style.display = "block";
         }
 
         editCloseBtn.onclick = function () {
-            editUserModal.style.display = "none";
+            editTableModal.style.display = "none";
         }
 
         // Close Modals when clicking outside
         window.onclick = function (event) {
-            if (event.target === addUserModal) {
-                addUserModal.style.display = "none";
+            if (event.target === addTableModal) {
+                addTableModal.style.display = "none";
             }
-            if (event.target === editUserModal) {
-                editUserModal.style.display = "none";
+            if (event.target === editTableModal) {
+                editTableModal.style.display = "none";
             }
         }
 
-        // --- AJAX Form Submission: Add User (POST) ---
-        addUserForm.addEventListener('submit', async function (e) {
+        /**
+         * Handles AJAX DELETE request for a table.
+         * @param {HTMLElement} button - The clicked 'Delete' button.
+         */
+        async function deleteTable(button) {
+            const tableId = button.getAttribute('data-id');
+            const tableNumber = button.getAttribute('data-table-number');
+
+            if (!confirm(`Are you sure you want to delete Table ${tableNumber}? This action is irreversible.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/staff/tables/${tableId}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (response.ok) {
+                    showMessage('success', `Table ${tableNumber} deleted successfully! Refreshing page...`);
+                    setTimeout(() => { window.location.reload(); }, 1500);
+                } else {
+                    const errorData = await response.json();
+                    showMessage('error', `Error deleting table: ${errorData.message || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('Deletion failed:', error);
+                showMessage('error', 'A network error occurred while deleting the table.');
+            }
+        }
+
+
+        // --- AJAX Form Submission: Add Table (POST) ---
+        addTableForm.addEventListener('submit', async function (e) {
             e.preventDefault();
 
             const formData = new FormData(this);
             const data = Object.fromEntries(formData.entries());
 
+            // The value from the select box will be the ObjectId or "" (empty string).
+            // Convert empty string to null for the server-side logic if needed, otherwise send ""
+            if (data.ipAddress === "") {
+                data.ipAddress = null;
+            }
+
             try {
-                const response = await fetch('/api/staff/users', {
+                const response = await fetch('/api/staff/tables', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
 
                 if (response.ok) {
-                    addUserModal.style.display = "none";
-                    addUserForm.reset(); 
-                    
-                    showMessage('success', 'New user created successfully! Refreshing page...');
-                    // Automatically reload to display the new user in the table
+                    addTableModal.style.display = "none";
+                    addTableForm.reset();
+
+                    showMessage('success', 'New table created successfully! Refreshing page...');
                     setTimeout(() => { window.location.reload(); }, 1500);
 
                 } else {
                     const errorData = await response.json();
-                    showMessage('error', `Error creating user: ${errorData.message || 'Unknown error'}`);
+                    showMessage('error', `Error creating table: ${errorData.message || 'Unknown error'}`);
                 }
             } catch (error) {
                 console.error('Submission failed:', error);
-                showMessage('error', 'A network error occurred while creating the user.');
+                showMessage('error', 'A network error occurred while creating the table.');
             }
         });
 
-        // --- AJAX Form Submission: Edit User (PUT) ---
-        editUserForm.addEventListener('submit', async function (e) {
+        // --- AJAX Form Submission: Edit Table (PUT) ---
+        editTableForm.addEventListener('submit', async function (e) {
             e.preventDefault();
 
             const formData = new FormData(this);
             const data = Object.fromEntries(formData.entries());
 
-            // Extract ID and remove it from the body payload
-            const userId = data.id;
-            delete data.id; 
+            const tableId = data.id;
+            delete data.id; // Remove ID from the update payload
 
-            // Filter data to only send non-empty/non-null fields (especially for optional password)
             const updates = {};
             for (const key in data) {
-                if (data[key] !== '' && data[key] !== null) {
-                    // Convert 'true'/'false' string for isActive back to boolean for the API
-                    if (key === 'isActive') {
-                        updates[key] = (data[key] === 'true');
-                    } else {
-                        updates[key] = data[key];
-                    }
+                const value = data[key];
+
+                // Critical change: For the 'ipAddress' select box, an empty string means NULL (or unassigned device).
+                if (key === 'ipAddress') {
+                    // Only send it if it's explicitly set to an ID or the empty string (which we convert to null)
+                    updates[key] = value === '' ? null : value;
+                }
+                // Include other fields
+                else {
+                    updates[key] = value;
                 }
             }
 
+            if (Object.keys(updates).length === 0) {
+                showMessage('error', 'No changes detected to save.');
+                return;
+            }
+            
             try {
-                const response = await fetch(`/api/staff/users/${userId}`, {
+                const response = await fetch(`/api/staff/tables/${tableId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(updates)
                 });
 
                 if (response.ok) {
-                    editUserModal.style.display = "none";
+                    editTableModal.style.display = "none";
 
-                    showMessage('success', `User ${userId.substring(0, 5)}... updated successfully! Refreshing page...`);
+                    showMessage('success', `Table ${tableId.substring(0, 5)}... updated successfully! Refreshing page...`);
 
-                    // Reload the whole page to show the updated user in the table
                     setTimeout(() => { window.location.reload(); }, 1500);
 
                 } else {
                     const errorData = await response.json();
-                    showMessage('error', `Error updating user: ${errorData.message || 'Unknown error'}`);
+                    showMessage('error', `Error updating table: ${errorData.message || 'Unknown error'}`);
                 }
             } catch (error) {
                 console.error('Update submission failed:', error);
-                showMessage('error', 'A network error occurred while updating the user.');
+                showMessage('error', 'A network error occurred while updating the table.');
             }
         });
 

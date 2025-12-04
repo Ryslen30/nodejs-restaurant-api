@@ -8,8 +8,9 @@ class TableRepository extends BaseRepository {
         super(TableModel); // Inherits CRUD methods for the Table model
     }
 
+    
     // --- Custom Logic for Tables ---
-
+    
     async findTableByIp(ipAddress) {
         // CRITICAL: Used by middleware/service to identify the originating table
         return this.model.findOne({ ipAddress: ipAddress })
@@ -29,4 +30,4 @@ class TableRepository extends BaseRepository {
     }
 }
 
-module.exports = TableRepository;
+module.exports = new TableRepository;

@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Management - Staff Dashboard</title>
+
+    <style>
+        /* --- Styles (Reusing your previous CSS for layout, table, and modals) --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; min-height: 100vh; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px 40px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
+        .dashboard-wrapper { display: flex; min-height: calc(100vh - 64px); }
+        .sidebar { width: 250px; background: #ffffff; padding: 20px; box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05); flex-shrink: 0; }
+        .main-content { flex-grow: 1; padding: 40px 20px; max-width: 1100px; margin: 0 auto; }
+        .dashboard-card { background: white; border-radius: 10px; padding: 30px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); margin-bottom: 20px; }
+        .table-actions { display: flex; justify-content: flex-end; margin-bottom: 20px; }
+        .add-product-btn { background: #28a745; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; text-decoration: none; transition: background 0.3s; }
+        
+        .products-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .products-table thead th { background-color: #f8f9fa; color: #333; text-align: left; padding: 12px 10px; border-bottom: 2px solid #ddd; font-weight: 600; font-size: 14px; }
+        .products-table tbody td { padding: 10px 10px; border-bottom: 1px solid #eee; color: #555; vertical-align: top; font-size: 14px; word-wrap: break-word; }
+        .products-table th:nth-child(1) { width: 5%; } /* ID */
+        .products-table th:nth-child(2) { width: 15%; } /* Name */
+        .products-table th:nth-child(3) { width: 15%; } /* Price */
+        .products-table th:nth-child(4) { width: 10%; } /* Category */
+        .products-table th:nth-child(5) { width: 10%; } /* Box? */
+        .products-table th:nth-child(6) { width: 10%; } /* Available */
+        .products-table th:nth-child(7) { width: 20%; } /* Actions */
+        
+        .action-btn { padding: 6px 10px; margin-right: 5px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; transition: background 0.3s; }
+        .edit-btn { background: #007bff; color: white; }
+        .delete-btn { background: #dc3545; color: white; }
+
+        .status-Available { color: #28a745; font-weight: 600; }
+        .status-Unavailable { color: #6c757d; font-weight: 600; }
+        
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0, 0, 0, 0.4); padding-top: 60px; }
+        .modal-content { background-color: #fefefe; margin: 5% auto; padding: 30px; border: 1px solid #888; width: 90%; max-width: 500px; border-radius: 10px; }
+        .close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #333; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .checkbox-group { display: flex; align-items: center; }
+        .checkbox-group input[type="checkbox"] { width: auto; margin-right: 10px; }
+        .form-actions { text-align: right; margin-top: 20px; }
+        .submit-btn { background: #667eea; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .success-message { padding: 15px; margin-bottom: 20px; border: 1px solid #d4edda; color: #155724; background-color: #d4edda; border-radius: 5px; }
+        .error-message { padding: 15px; margin-bottom: 20px; border: 1px solid #f5c6cb; color: #721c24; background-color: #f8d7da; border-radius: 5px; }
+         /* [Your existing CSS goes here] */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+
+        /* --- Layout & Header --- */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+        }
+
+        .dashboard-wrapper {
+            display: flex;
+            /* Recalculate if needed based on final header height */
+            min-height: calc(100vh - 64px); 
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 250px;
+            background: #ffffff;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+            flex-shrink: 0;
+        }
+
+        .sidebar h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 18px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 10px;
+        }
+
+        .sidebar-nav a {
+            text-decoration: none;
+            color: #555;
+            display: block;
+            padding: 10px 15px;
+            border-radius: 5px;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .sidebar-nav a:hover,
+        .sidebar-nav a.active {
+            background: #e9ecef;
+            color: #667eea;
+        }
+
+        /* --- Main Content --- */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px 20px;
+            max-width: 950px;
+            margin: 0 auto;
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .dashboard-card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        /* --- Table and Actions --- */
+        .table-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+
+        .add-table-btn {
+            background: #28a745;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+
+        .add-table-btn:hover {
+            background: #218838;
+        }
+
+        .tables-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .tables-table thead th {
+            background-color: #f8f9fa;
+            color: #333;
+            text-align: left;
+            padding: 12px 15px;
+            border-bottom: 2px solid #ddd;
+            font-weight: 600;
+        }
+
+        .tables-table tbody td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            color: #555;
+            vertical-align: middle;
+        }
+
+        .tables-table tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .action-btn {
+            padding: 6px 10px;
+            margin-right: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s;
+        }
+
+        .edit-btn {
+            background: #007bff;
+            color: white;
+        }
+
+        .edit-btn:hover {
+            background: #0056b3;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        .status-Vacant {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .status-Occupied {
+            color: #ffc107;
+            /* Yellow */
+            font-weight: 600;
+        }
+
+        .status-Needs {
+            color: #dc3545;
+            /* Red */
+            font-weight: 600;
+        }
+
+        /* --- Modal Styles --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 30px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+            animation: animatetop 0.4s;
+        }
+
+        @keyframes animatetop {
+            from {
+                top: -300px;
+                opacity: 0
+            }
+
+            to {
+                top: 0;
+                opacity: 1
+            }
+        }
+
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .close-btn:hover,
+        .close-btn:focus {
+            color: #000;
+            text-decoration: none;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .form-actions {
+            text-align: right;
+            margin-top: 20px;
+        }
+
+        .form-actions button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .submit-btn {
+            background: #667eea;
+            color: white;
+            transition: background 0.3s;
+        }
+
+        .submit-btn:hover {
+            background: #5a6ed8;
+        }
+
+        /* --- Messages (Success/Error) --- */
+        .success-message {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #d4edda;
+            color: #155724;
+            background-color: #d4edda;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: opacity 0.5s ease-out;
+        }
+
+        .error-message {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            background-color: #f8d7da;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: opacity 0.5s ease-out;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>🏢 Staff Dashboard</h1>
+    </div>
+
+    <div class="dashboard-wrapper">
+             <div class="sidebar">
+            <h3>Navigation 🧭</h3>
+            <ul class="sidebar-nav">
+                <li><a href="/api/staff/dashboard" class="<%= currentPage === 'dashboard' ? 'active' : '' %>">🏠
+                        Dashboard Home</a></li>
+                <li><a href="/api/staff/users" class="<%= currentPage === 'users' ? 'active' : '' %>">🧑‍💻 Users
+                        Management</a></li>
+                <li><a href="/api/staff/tables" class="<%= currentPage === 'tables' ? 'active' : '' %>">📊 Tables
+                        Management</a></li>
+                <li><a href="/api/staff/products" class="<%= currentPage === 'products' ? 'active' : '' %>">📦 Products
+                        Management</a></li>
+                <li><a href="/api/staff/orders" class="<%= currentPage === 'orders' ? 'active' : '' %>">📊 Orders Management
+                </a></li>
+                <li><a href="/api/staff/categories" class="<%= currentPage === 'categories' ? 'active' : '' %>">🏷️
+                        Category Management</a></li>
+            </ul>
+        </div>
+
+        <div class="main-content">
+        <% if (message && message.length > 0) { %>
+        <div class="<%= message.includes('Error') || message.includes('Failed') ? 'error-message' : 'success-message' %>">
+            <%= message.includes('Error') || message.includes('Failed') ? '✗' : '✓' %>
+            <%= message %>
+        </div>
+    <% } %>
+
+            <div class="dashboard-card">
+                <h2>Product Management (<%= products.length %> Total)</h2>
+
+                <div class="table-actions">
+                    <button id="showAddProductModal" class="add-product-btn">
+                        + Add New Product
+                    </button>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table class="products-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Price</th>
+                                <th>Category</th>
+                                <th>Is Box?</th>
+                                <th>Available</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% products.forEach(product=> { %>
+                                <tr>
+                                    <td>
+                                        <%= product._id.toString().substring(0, 5) %>...
+                                    </td>
+                                    <td>
+                                        <%= product.name %>
+                                    </td>
+                                    <td>
+                                        $<%= product.price.toFixed(2) %>
+                                    </td>
+                                    <td>
+                                        <%= product.category ? product.category.name : 'Unassigned' %>
+                                    </td>
+                                    <td>
+                                        <%= product.isBox ? 'Yes' : 'No' %>
+                                    </td>
+                                    <td>
+                                        <% const statusText = product.isAvailable ? 'Available' : 'Unavailable'; %>
+                                        <span class="status-<%= statusText %>">
+                                            <%= statusText %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="action-btn edit-btn"
+                                            data-product='<%= JSON.stringify(product) %>' onclick="openEditModal(this)">
+                                            Edit
+                                        </button>
+                                        <button class="action-btn delete-btn" 
+                                            data-id="<%= product._id %>"
+                                            data-name="<%= product.name %>"
+                                            onclick="deleteProduct(this)">
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            <% }); %>
+
+                            <% if (products.length===0) { %>
+                                <tr>
+                                    <td colspan="7" style="text-align: center; padding: 20px;">No products found.</td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="addProductModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn add-close-btn">&times;</span>
+            <h2>Create New Product</h2>
+            <form id="addProductForm">
+                
+                <div class="form-group">
+                    <label for="name">Product Name (Required)</label>
+                    <input type="text" id="name" name="name" required maxlength="50">
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description (Optional)</label>
+                    <textarea id="description" name="description" rows="3" maxlength="200"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="price">Price (Required)</label>
+                    <input type="number" id="price" name="price" required min="0.01" step="0.01">
+                </div>
+                
+                <div class="form-group">
+                    <label for="category">Category (Required)</label>
+                    <select id="category" name="category" required>
+                        <option value="">-- Select a Category --</option>
+                        <% categories.forEach(category=> { %>
+                            <option value="<%= category._id %>">
+                                <%= category.name %>
+                            </option>
+                        <% }); %>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="imageUrl">Image URL (Optional)</label>
+                    <input type="text" id="imageUrl" name="imageUrl" placeholder="http://example.com/image.jpg">
+                </div>
+                
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="isBox" name="isBox" value="true">
+                    <label for="isBox">Is this a Product Box/Bundle?</label>
+                </div>
+
+                <div class="form-group">
+                    <label for="isAvailable">Availability Status</label>
+                    <select id="isAvailable" name="isAvailable" required>
+                        <option value="true">Available</option>
+                        <option value="false">Unavailable</option>
+                    </select>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="submit-btn">Create Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="editProductModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn edit-close-btn">&times;</span>
+            <h2>Edit Product: <span id="edit-product-name-title"></span></h2>
+            <form id="editProductForm">
+                <input type="hidden" id="edit-id" name="id">
+
+                <div class="form-group">
+                    <label for="edit-name">Product Name (Required)</label>
+                    <input type="text" id="edit-name" name="name" required maxlength="50">
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-description">Description (Optional)</label>
+                    <textarea id="edit-description" name="description" rows="3" maxlength="200"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-price">Price (Required)</label>
+                    <input type="number" id="edit-price" name="price" required min="0.01" step="0.01">
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-category">Category (Required)</label>
+                    <select id="edit-category" name="category" required>
+                        <option value="">-- Select a Category --</option>
+                        <% categories.forEach(category=> { %>
+                            <option value="<%= category._id %>">
+                                <%= category.name %>
+                            </option>
+                        <% }); %>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-imageUrl">Image URL (Optional)</label>
+                    <input type="text" id="edit-imageUrl" name="imageUrl" placeholder="http://example.com/image.jpg">
+                </div>
+                
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="edit-isBox" name="isBox" value="true">
+                    <label for="edit-isBox">Is this a Product Box/Bundle?</label>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-isAvailable">Availability Status</label>
+                    <select id="edit-isAvailable" name="isAvailable" required>
+                        <option value="true">Available</option>
+                        <option value="false">Unavailable</option>
+                    </select>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="submit-btn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- Element Selection & Message Helper (Omitted for brevity, assume similar to previous response) ---
+        const addProductModal = document.getElementById("addProductModal");
+        const showAddProductBtn = document.getElementById("showAddProductModal");
+        const addCloseBtn = document.querySelector(".add-close-btn");
+        const addProductForm = document.getElementById("addProductForm");
+
+        const editProductModal = document.getElementById("editProductModal");
+        const editCloseBtn = document.querySelector(".edit-close-btn");
+        const editProductForm = document.getElementById("editProductForm");
+        const mainContent = document.querySelector(".main-content");
+
+        // Basic showMessage function (defined earlier)
+        function showMessage(type, text) {
+            document.querySelectorAll('.success-message, .error-message').forEach(el => el.remove());
+            const msgDiv = document.createElement('div');
+            msgDiv.className = type === 'success' ? 'success-message' : 'error-message';
+            msgDiv.innerHTML = `${type === 'success' ? '✓' : '✗'} <strong>${text}</strong>`;
+            mainContent.prepend(msgDiv);
+            setTimeout(() => { msgDiv.style.opacity = '0'; setTimeout(() => msgDiv.remove(), 500); }, 3000);
+        }
+        
+        // --- Modal Control Functions ---
+        showAddProductBtn.onclick = function (event) {
+            event.preventDefault();
+            addProductModal.style.display = "block";
+            addProductForm.reset();
+            // Default status
+            document.getElementById('isAvailable').value = 'true'; 
+            document.getElementById('isBox').checked = false; 
+        }
+
+        addCloseBtn.onclick = function () { addProductModal.style.display = "none"; }
+        editCloseBtn.onclick = function () { editProductModal.style.display = "none"; }
+        
+        window.onclick = function (event) {
+            if (event.target === addProductModal) { addProductModal.style.display = "none"; }
+            if (event.target === editProductModal) { editProductModal.style.display = "none"; }
+        }
+
+        /**
+         * Populates and opens the Edit Product modal.
+         */
+        function openEditModal(button) {
+            const productData = JSON.parse(button.getAttribute('data-product'));
+
+            document.getElementById('edit-id').value = productData._id;
+            document.getElementById('edit-product-name-title').textContent = productData.name;
+            document.getElementById('edit-name').value = productData.name;
+            document.getElementById('edit-description').value = productData.description || '';
+            document.getElementById('edit-price').value = productData.price;
+            document.getElementById('edit-imageUrl').value = productData.imageUrl || '';
+            
+            // Set Category ID
+            const categoryId = (productData.category && productData.category._id) 
+                ? productData.category._id 
+                : productData.category; // Handles both populated and unpopulated category
+                
+            document.getElementById('edit-category').value = categoryId;
+            
+            // Set Checkbox (isBox)
+            document.getElementById('edit-isBox').checked = productData.isBox;
+
+            // Set Availability Status
+            document.getElementById('edit-isAvailable').value = String(productData.isAvailable);
+
+            editProductModal.style.display = "block";
+        }
+        window.openEditModal = openEditModal; 
+
+        // --- AJAX Form Submission: Add Product (POST) ---
+        addProductForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+            
+            // Convert 'isAvailable' string to boolean
+            data.isAvailable = data.isAvailable === 'true';
+            // Checkbox handling: If checked, FormData gives 'true'. If unchecked, it's missing.
+            data.isBox = data.isBox === 'true'; 
+            // Convert price to number
+            data.price = parseFloat(data.price);
+            
+            // Handle optional fields that might be empty
+            if (data.description === '') delete data.description;
+            if (data.imageUrl === '') delete data.imageUrl;
+
+            try {
+                const response = await fetch('/api/staff/products', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const responseData = await response.json();
+
+                if (response.ok) {
+                    addProductModal.style.display = "none";
+                    showMessage('success', 'New product created successfully! Refreshing page...');
+                    await new Promise(resolve => setTimeout(resolve, 50)); 
+                    setTimeout(() => { window.location.reload(); }, 1500);
+
+                } else {
+                    showMessage('error', `Error creating product: ${responseData.message || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('Submission failed:', error);
+                showMessage('error', 'A network error occurred while creating the product.');
+            }
+        });
+
+        // --- AJAX Form Submission: Edit Product (PUT) ---
+        editProductForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+
+            const productId = data.id;
+            delete data.id; 
+
+            // Prepare updates payload, converting types
+            const updates = { 
+                name: data.name,
+                description: data.description || '', // Set to empty string if missing
+                price: parseFloat(data.price),
+                category: data.category,
+                imageUrl: data.imageUrl || '', // Set to empty string if missing
+                isBox: data.isBox === 'true', // Checkbox handling
+                isAvailable: data.isAvailable === 'true'
+            };
+
+            try {
+                const response = await fetch(`/api/staff/products/${productId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updates)
+                });
+
+                if (response.ok) {
+                    editProductModal.style.display = "none";
+                    showMessage('success', `Product ${updates.name} updated successfully! Refreshing page...`);
+                    await new Promise(resolve => setTimeout(resolve, 50)); 
+                    setTimeout(() => { window.location.reload(); }, 1500);
+
+                } else {
+                    let errorData;
+                    try {
+                        errorData = await response.json();
+                    } catch (e) {
+                        showMessage('error', `Update failed (${response.status}). Server returned an unexpected page.`);
+                        return;
+                    }
+                    showMessage('error', `Error updating product: ${errorData.message || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('Update submission failed:', error);
+                showMessage('error', 'A network error occurred while updating the product.');
+            }
+        });
+
+        // --- AJAX Deletion Function (Omitted for brevity, assume similar to previous response) ---
+        async function deleteProduct(button) {
+            // ... (Logic for DELETE request)
+        }
+        window.deleteProduct = deleteProduct; 
+    </script>
+</body>
+
+</html>

@@ -30,4 +30,4 @@ class ProductRepository extends BaseRepository {
     // Note: The basic findById, create, updateById are inherited from BaseRepository
 }
 
-module.exports = ProductRepository;
+module.exports = new ProductRepository;

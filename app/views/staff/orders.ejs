@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Management - Staff Dashboard</title>
+
+    <style>
+        /* --- General Styles (Reusing your existing dashboard CSS) --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; min-height: 100vh; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px 40px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
+        .dashboard-wrapper { display: flex; min-height: calc(100vh - 64px); }
+        .sidebar { width: 250px; background: #ffffff; padding: 20px; box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05); flex-shrink: 0; }
+        .main-content { flex-grow: 1; padding: 40px 20px; max-width: 1200px; margin: 0 auto; }
+        .dashboard-card { background: white; border-radius: 10px; padding: 30px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); margin-bottom: 20px; }
+        .dashboard-card h2 { color: #333; margin-bottom: 20px; font-size: 20px; }
+        
+        /* --- Order Table Specific Styles --- */
+        .orders-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .orders-table thead th { background-color: #f8f9fa; color: #333; text-align: left; padding: 12px 10px; border-bottom: 2px solid #ddd; font-weight: 600; font-size: 14px; }
+        .orders-table tbody td { padding: 10px 10px; border-bottom: 1px solid #eee; color: #555; vertical-align: middle; font-size: 14px; word-wrap: break-word; }
+        .orders-table tbody tr:hover { background-color: #f1f1f1; }
+        
+        /* Column Widths */
+        .orders-table th:nth-child(1) { width: 5%; } /* ID */
+        .orders-table th:nth-child(2) { width: 15%; } /* User/Table */
+        .orders-table th:nth-child(3) { width: 15%; } /* Items/Details */
+        .orders-table th:nth-child(4) { width: 10%; } /* Total */
+        .orders-table th:nth-child(5) { width: 15%; } /* Time */
+        .orders-table th:nth-child(6) { width: 25%; } /* Status & Actions */
+
+        /* Status Badges */
+        .status-badge { padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; display: inline-block; }
+        .status-pending { background-color: #ffc107; color: #343a40; }
+        .status-processing { background-color: #17a2b8; color: white; }
+        .status-ready { background-color: #007bff; color: white; }
+        .status-completed { background-color: #28a745; color: white; }
+        .status-cancelled { background-color: #dc3545; color: white; }
+
+        /* Status Update Form */
+        .status-form { display: flex; align-items: center; margin-top: 5px; }
+        .status-form select { padding: 6px; border: 1px solid #ccc; border-radius: 4px; margin-right: 5px; font-size: 13px; }
+        .status-form button { padding: 6px 10px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; transition: background 0.3s; }
+        .status-form button:hover { background: #5a6ed8; }
+        
+        /* --- Messages (Success/Error) --- */
+        .success-message { padding: 15px; margin-bottom: 20px; border: 1px solid #d4edda; color: #155724; background-color: #d4edda; border-radius: 5px; font-weight: bold; }
+        .error-message { padding: 15px; margin-bottom: 20px; border: 1px solid #f5c6cb; color: #721c24; background-color: #f8d7da; border-radius: 5px; font-weight: bold; }
+        
+        /* Detail Button */
+        .detail-btn { background: #6c757d; color: white; padding: 6px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; transition: background 0.3s; }
+        .detail-btn:hover { background: #5a6268; }
+         /* [Your existing CSS goes here] */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+
+        /* --- Layout & Header --- */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+        }
+
+        .dashboard-wrapper {
+            display: flex;
+            /* Recalculate if needed based on final header height */
+            min-height: calc(100vh - 64px); 
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 250px;
+            background: #ffffff;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+            flex-shrink: 0;
+        }
+
+        .sidebar h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 18px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 10px;
+        }
+
+        .sidebar-nav a {
+            text-decoration: none;
+            color: #555;
+            display: block;
+            padding: 10px 15px;
+            border-radius: 5px;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .sidebar-nav a:hover,
+        .sidebar-nav a.active {
+            background: #e9ecef;
+            color: #667eea;
+        }
+
+        /* --- Main Content --- */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px 20px;
+            max-width: 950px;
+            margin: 0 auto;
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .dashboard-card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        /* --- Table and Actions --- */
+        .table-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+
+        .add-table-btn {
+            background: #28a745;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+
+        .add-table-btn:hover {
+            background: #218838;
+        }
+
+        .tables-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .tables-table thead th {
+            background-color: #f8f9fa;
+            color: #333;
+            text-align: left;
+            padding: 12px 15px;
+            border-bottom: 2px solid #ddd;
+            font-weight: 600;
+        }
+
+        .tables-table tbody td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            color: #555;
+            vertical-align: middle;
+        }
+
+        .tables-table tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .action-btn {
+            padding: 6px 10px;
+            margin-right: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s;
+        }
+
+        .edit-btn {
+            background: #007bff;
+            color: white;
+        }
+
+        .edit-btn:hover {
+            background: #0056b3;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        .status-Vacant {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .status-Occupied {
+            color: #ffc107;
+            /* Yellow */
+            font-weight: 600;
+        }
+
+        .status-Needs {
+            color: #dc3545;
+            /* Red */
+            font-weight: 600;
+        }
+
+        /* --- Modal Styles --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 30px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+            animation: animatetop 0.4s;
+        }
+
+        @keyframes animatetop {
+            from {
+                top: -300px;
+                opacity: 0
+            }
+
+            to {
+                top: 0;
+                opacity: 1
+            }
+        }
+
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .close-btn:hover,
+        .close-btn:focus {
+            color: #000;
+            text-decoration: none;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .form-actions {
+            text-align: right;
+            margin-top: 20px;
+        }
+
+        .form-actions button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .submit-btn {
+            background: #667eea;
+            color: white;
+            transition: background 0.3s;
+        }
+
+        .submit-btn:hover {
+            background: #5a6ed8;
+        }
+
+        /* --- Messages (Success/Error) --- */
+        .success-message {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #d4edda;
+            color: #155724;
+            background-color: #d4edda;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: opacity 0.5s ease-out;
+        }
+
+        .error-message {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            background-color: #f8d7da;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: opacity 0.5s ease-out;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>🏢 Staff Dashboard</h1>
+    </div>
+
+    <div class="dashboard-wrapper">
+            <div class="sidebar">
+            <h3>Navigation 🧭</h3>
+            <ul class="sidebar-nav">
+                <li><a href="/api/staff/dashboard" class="<%= currentPage === 'dashboard' ? 'active' : '' %>">🏠
+                        Dashboard Home</a></li>
+                <li><a href="/api/staff/users" class="<%= currentPage === 'users' ? 'active' : '' %>">🧑‍💻 Users
+                        Management</a></li>
+                <li><a href="/api/staff/tables" class="<%= currentPage === 'tables' ? 'active' : '' %>">📊 Tables
+                        Management</a></li>
+                <li><a href="/api/staff/products" class="<%= currentPage === 'products' ? 'active' : '' %>">📦 Products
+                        Management</a></li>
+                <li><a href="/api/staff/orders" class="<%= currentPage === 'orders' ? 'active' : '' %>">📊 Orders Management
+                </a></li>
+                <li><a href="/api/staff/categories" class="<%= currentPage === 'categories' ? 'active' : '' %>">🏷️
+                        Category Management</a></li>
+            </ul>
+        </div>
+
+        <div class="main-content">
+            <% if (message && message.length > 0) { %>
+                <div class="<%= message.includes('Error') || message.includes('Failed') ? 'error-message' : 'success-message' %>">
+                    <%= message.includes('Error') || message.includes('Failed') ? '✗' : '✓' %>
+                    <%= message %>
+                </div>
+            <% } %>
+
+            <div class="dashboard-card">
+                <h2>Recent Orders (<%= orders.length %> Total)</h2>
+                <p style="margin-bottom: 15px; color: #777;">Showing the latest 50 orders.</p>
+
+                <div style="overflow-x: auto;">
+                    <table class="orders-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Customer/Source</th>
+                                <th>Items</th>
+                                <th>Total</th>
+                                <th>Time</th>
+                                <th>Status & Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% orders.forEach(order => { %>
+                                <tr>
+                                    <td>
+                                        <%= order._id.toString().substring(0, 5) %>...
+                                    </td>
+                                    <td>
+                                        <% if (order.table && order.table.name) { %>
+                                            Table: <strong><%= order.table.name %></strong>
+                                        <% } else if (order.user && order.user.username) { %>
+                                            User: <strong><%= order.user.username %></strong>
+                                        <% } else { %>
+                                            (Unknown Source)
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <%= order.items.length %> items
+                                        <button class="detail-btn" onclick="viewOrderDetails('<%= JSON.stringify(order) %>')">
+                                            Details
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <strong>$<%= order.totalAmount ? order.totalAmount.toFixed(2) : '0.00' %></strong>
+                                    </td>
+                                    <td>
+                                        <%= new Date(order.createdAt).toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' }) %>
+                                    </td>
+                                    <td>
+                                        <span class="status-badge status-<%= order.status.toLowerCase() %>">
+                                            <%= order.status.toUpperCase() %>
+                                        </span>
+                                        
+                                        <form class="status-form" onsubmit="updateStatus(event, '<%= order._id %>')">
+                                            <select name="status" required>
+                                                <option value="">Set New Status</option>
+                                                <% const STATUSES = ['pending', 'processing', 'ready', 'completed', 'cancelled']; %>
+                                                <% STATUSES.forEach(s => { %>
+                                                    <option value="<%= s %>" <%= order.status.toLowerCase() === s ? 'disabled' : '' %>>
+                                                        <%= s.charAt(0).toUpperCase() + s.slice(1) %>
+                                                    </option>
+                                                <% }); %>
+                                            </select>
+                                            <button type="submit">Update</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            <% }); %>
+
+                            <% if (orders.length === 0) { %>
+                                <tr>
+                                    <td colspan="6" style="text-align: center; padding: 20px;">No recent orders found.</td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="orderDetailsModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <span class="close-btn detail-close-btn">&times;</span>
+            <h2>Order Details: <span id="modal-order-id"></span></h2>
+            <div id="modal-order-content" style="margin-top: 15px;">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Modal & Element Selection ---
+        const detailModal = document.getElementById("orderDetailsModal");
+        const detailCloseBtn = document.querySelector(".detail-close-btn");
+        const mainContent = document.querySelector(".main-content");
+
+        // Basic showMessage function (defined in previous files)
+        function showMessage(type, text) {
+            document.querySelectorAll('.success-message, .error-message').forEach(el => el.remove());
+            const msgDiv = document.createElement('div');
+            msgDiv.className = type === 'success' ? 'success-message' : 'error-message';
+            msgDiv.innerHTML = `${type === 'success' ? '✓' : '✗'} <strong>${text}</strong>`;
+            mainContent.prepend(msgDiv);
+            setTimeout(() => { msgDiv.style.opacity = '0'; setTimeout(() => msgDiv.remove(), 500); }, 3000);
+        }
+        
+        detailCloseBtn.onclick = function () { detailModal.style.display = "none"; }
+        window.onclick = function (event) {
+            if (event.target === detailModal) { detailModal.style.display = "none"; }
+        }
+
+        /**
+         * AJAX Function to update order status.
+         */
+        async function updateStatus(e, orderId) {
+            e.preventDefault();
+
+            const form = e.target;
+            const status = form.querySelector('select[name="status"]').value;
+
+            if (!status) {
+                showMessage('error', 'Please select a new status.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/staff/orders/${orderId}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: status })
+                });
+
+                const responseData = await response.json();
+
+                if (response.ok) {
+                    showMessage('success', responseData.message || 'Order status updated!');
+                    // Reload the page to show the update immediately
+                    setTimeout(() => { window.location.reload(); }, 1000);
+                } else {
+                    showMessage('error', responseData.message || 'Failed to update status.');
+                }
+
+            } catch (error) {
+                console.error('Status update failed:', error);
+                showMessage('error', 'A network error occurred while updating the order.');
+            }
+        }
+        window.updateStatus = updateStatus;
+        
+        /**
+         * Opens the modal and displays item details.
+         */
+        function viewOrderDetails(orderJson) {
+            const order = JSON.parse(orderJson);
+            const content = document.getElementById('modal-order-content');
+            
+            document.getElementById('modal-order-id').textContent = order._id.toString().substring(0, 10) + '...';
+
+            let itemsHtml = `
+                <p><strong>Status:</strong> <span class="status-badge status-${order.status.toLowerCase()}">${order.status.toUpperCase()}</span></p>
+                <p><strong>Total:</strong> $${order.totalAmount.toFixed(2)}</p>
+                <p><strong>Order Time:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
+                <hr style="margin: 10px 0;">
+                <h4>Items (${order.items.length}):</h4>
+                <ul style="list-style-type: none; padding-left: 0;">
+            `;
+
+            // Note: This relies on the items having a populated 'product' field or having the product name stored.
+            // Assuming for this EJS template that the Product name is accessible through order.items[i].product.name
+            order.items.forEach(item => {
+                const productName = item.product && item.product.name 
+                                    ? item.product.name 
+                                    : (item.product || 'Unknown Product');
+
+                itemsHtml += `
+                    <li style="padding: 5px 0; border-bottom: 1px dotted #eee;">
+                        ${item.quantity} x <strong>${productName}</strong> 
+                        ($${(item.unitPrice * item.quantity).toFixed(2)})
+                    </li>
+                `;
+            });
+
+            itemsHtml += `</ul>`;
+            content.innerHTML = itemsHtml;
+            detailModal.style.display = "block";
+        }
+        window.viewOrderDetails = viewOrderDetails;
+
+    </script>
+</body>
+
+</html>

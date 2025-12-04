@@ -29,15 +29,15 @@ app.set('views', path.join(__dirname,'app', 'views')); // Adjust path if needed
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files (CSS, JS, images)
-app.use(express.static(path.join(__dirname, 'public')));
+
 
 // Mount your routes under /api
 app.use('/api', routes);
 
 async function startServer() {
   try {
-    await connectDB();   
+    await connectDB(); 
+  
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
       console.log(`API available at http://localhost:${PORT}/api`);

@@ -10,7 +10,7 @@ const CategorySchema = new mongoose.Schema({
     description: {
         type: String,
         trim: true,
-        default: ''
+        default: " No description provided."
     },
     isActive: {
         type: Boolean,
