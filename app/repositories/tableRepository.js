@@ -9,11 +9,14 @@ class TableRepository extends BaseRepository {
     }
 
     
-    // --- Custom Logic for Tables ---
-    
-    async findTableByIp(ipAddress) {
-        // CRITICAL: Used by middleware/service to identify the originating table
-        return this.model.findOne({ ipAddress: ipAddress })
+    /**
+     * Finds a Table by the Device ID it is assigned to.
+     * @param {mongoose.Types.ObjectId} deviceId - The ObjectId of the linked Device.
+     * @returns {Promise<Table>}
+     */
+    async findTableByDeviceId(deviceId) {
+        // The query now correctly uses an ObjectId against the reference field 'ipAddress'
+        return this.model.findOne({ ipAddress: deviceId })
                          .exec();
     }
 
@@ -28,6 +31,8 @@ class TableRepository extends BaseRepository {
             { new: true }
         );
     }
+
+    
 }
 
 module.exports = new TableRepository;

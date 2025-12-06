@@ -12,6 +12,8 @@ class DeviceService {
         return deviceRepository.findAll();
     }
 
+    
+
 
 
 

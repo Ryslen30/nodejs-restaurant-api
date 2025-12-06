@@ -12,7 +12,7 @@
 //         const menuData = await menuService.getFullActiveMenu();
 
 //         // Output: JSON data for the Front Office
-//         res.status(200).json({ 
+//         res.status(200).json({  
 //             success: true, 
 //             menu: menuData 
 //         });

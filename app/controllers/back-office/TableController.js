@@ -106,7 +106,7 @@ exports.updateTable = async (req, res) => {
         }
         
         res.status(statusCode).json({ 
-            message: error.statusCode === 404 ? 'Table not found' : 'Failed to update table',
+            message: error.statusCode === 404 ? 'Table not found' : 'Device is not free',
             error: error.message 
         });
     }

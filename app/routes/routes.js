@@ -3,6 +3,7 @@ const router = express.Router();
 
 // --- FRONT OFFICE IMPORTS ---
 const clientMenuRoutes = require('./front-office/MenuRoutes');
+
 const clientOrderRoutes = require('./front-office/OrderRoutes');
 
 // --- BACK OFFICE IMPORTS ---
@@ -17,6 +18,8 @@ const staffMenuRoutes = require('./back-office/MenuRoutes');
 const staffOrderRoutes = require('./back-office/OrderRoutes');
 const staffCategoryRoutes = require('./back-office/CategoryRoutes');
 
+const UserRoutes = require('./back-office/UserRoutes');
+
 
 
 
@@ -28,9 +31,6 @@ const staffRouter = express.Router();
 
 // --- 2. MOUNT GRANULAR MODULES ONTO OFFICE SUB-ROUTERS ---
 
-// FRONT OFFICE MODULES (Prefixes applied here)
-// /client/menu
-// clientRouter.use('/menu', clientMenuRoutes);
 
 
 
@@ -59,6 +59,13 @@ staffRouter.use('/categories', staffCategoryRoutes);
 
 // /staff/orders
 staffRouter.use('/orders', staffOrderRoutes);
+
+
+// FRONT OFFICE MODULES (Prefixes applied here)
+// /client/menu
+clientRouter.use('/orders', clientOrderRoutes);
+
+clientRouter.use('/' , UserRoutes);
 
 
 
